@@ -1,0 +1,626 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E027E5A32F554FC90066E6F0 /* KSPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E027E5A22F554FC90066E6F0 /* KSPlayer */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E0E379AD2F55206F00CF1A3C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E0E379972F55206D00CF1A3C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0E3799E2F55206D00CF1A3C;
+			remoteInfo = PandaPlay;
+		};
+		E0E379B72F55206F00CF1A3C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E0E379972F55206D00CF1A3C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0E3799E2F55206D00CF1A3C;
+			remoteInfo = PandaPlay;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		E0E3799F2F55206D00CF1A3C /* PandaPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PandaPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0E379AC2F55206F00CF1A3C /* PandaPlayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PandaPlayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0E379B62F55206F00CF1A3C /* PandaPlayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PandaPlayUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E0E37A3B2F55265600CF1A3C /* Exceptions for "PandaPlay" folder in "PandaPlay" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E0E3799E2F55206D00CF1A3C /* PandaPlay */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		E0E379A12F55206D00CF1A3C /* PandaPlay */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E0E37A3B2F55265600CF1A3C /* Exceptions for "PandaPlay" folder in "PandaPlay" target */,
+			);
+			path = PandaPlay;
+			sourceTree = "<group>";
+		};
+		E0E379AF2F55206F00CF1A3C /* PandaPlayTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PandaPlayTests;
+			sourceTree = "<group>";
+		};
+		E0E379B92F55206F00CF1A3C /* PandaPlayUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PandaPlayUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E0E3799C2F55206D00CF1A3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E027E5A32F554FC90066E6F0 /* KSPlayer in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0E379A92F55206F00CF1A3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0E379B32F55206F00CF1A3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E0E379962F55206D00CF1A3C = {
+			isa = PBXGroup;
+			children = (
+				E0E379A12F55206D00CF1A3C /* PandaPlay */,
+				E0E379AF2F55206F00CF1A3C /* PandaPlayTests */,
+				E0E379B92F55206F00CF1A3C /* PandaPlayUITests */,
+				E0E379A02F55206D00CF1A3C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E0E379A02F55206D00CF1A3C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E0E3799F2F55206D00CF1A3C /* PandaPlay.app */,
+				E0E379AC2F55206F00CF1A3C /* PandaPlayTests.xctest */,
+				E0E379B62F55206F00CF1A3C /* PandaPlayUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E0E3799E2F55206D00CF1A3C /* PandaPlay */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E0E379C02F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlay" */;
+			buildPhases = (
+				E0E3799B2F55206D00CF1A3C /* Sources */,
+				E0E3799C2F55206D00CF1A3C /* Frameworks */,
+				E0E3799D2F55206D00CF1A3C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E0E379A12F55206D00CF1A3C /* PandaPlay */,
+			);
+			name = PandaPlay;
+			packageProductDependencies = (
+				E027E5A22F554FC90066E6F0 /* KSPlayer */,
+			);
+			productName = PandaPlay;
+			productReference = E0E3799F2F55206D00CF1A3C /* PandaPlay.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E0E379AB2F55206F00CF1A3C /* PandaPlayTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E0E379C32F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlayTests" */;
+			buildPhases = (
+				E0E379A82F55206F00CF1A3C /* Sources */,
+				E0E379A92F55206F00CF1A3C /* Frameworks */,
+				E0E379AA2F55206F00CF1A3C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E0E379AE2F55206F00CF1A3C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E0E379AF2F55206F00CF1A3C /* PandaPlayTests */,
+			);
+			name = PandaPlayTests;
+			packageProductDependencies = (
+			);
+			productName = PandaPlayTests;
+			productReference = E0E379AC2F55206F00CF1A3C /* PandaPlayTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E0E379B52F55206F00CF1A3C /* PandaPlayUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E0E379C62F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlayUITests" */;
+			buildPhases = (
+				E0E379B22F55206F00CF1A3C /* Sources */,
+				E0E379B32F55206F00CF1A3C /* Frameworks */,
+				E0E379B42F55206F00CF1A3C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E0E379B82F55206F00CF1A3C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E0E379B92F55206F00CF1A3C /* PandaPlayUITests */,
+			);
+			name = PandaPlayUITests;
+			packageProductDependencies = (
+			);
+			productName = PandaPlayUITests;
+			productReference = E0E379B62F55206F00CF1A3C /* PandaPlayUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E0E379972F55206D00CF1A3C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					E0E3799E2F55206D00CF1A3C = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					E0E379AB2F55206F00CF1A3C = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = E0E3799E2F55206D00CF1A3C;
+					};
+					E0E379B52F55206F00CF1A3C = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = E0E3799E2F55206D00CF1A3C;
+					};
+				};
+			};
+			buildConfigurationList = E0E3799A2F55206D00CF1A3C /* Build configuration list for PBXProject "PandaPlay" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E0E379962F55206D00CF1A3C;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E027E5A12F554FC90066E6F0 /* XCRemoteSwiftPackageReference "KSPlayer" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E0E379A02F55206D00CF1A3C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E0E3799E2F55206D00CF1A3C /* PandaPlay */,
+				E0E379AB2F55206F00CF1A3C /* PandaPlayTests */,
+				E0E379B52F55206F00CF1A3C /* PandaPlayUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E0E3799D2F55206D00CF1A3C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0E379AA2F55206F00CF1A3C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0E379B42F55206F00CF1A3C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E0E3799B2F55206D00CF1A3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0E379A82F55206F00CF1A3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0E379B22F55206F00CF1A3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E0E379AE2F55206F00CF1A3C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E0E3799E2F55206D00CF1A3C /* PandaPlay */;
+			targetProxy = E0E379AD2F55206F00CF1A3C /* PBXContainerItemProxy */;
+		};
+		E0E379B82F55206F00CF1A3C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E0E3799E2F55206D00CF1A3C /* PandaPlay */;
+			targetProxy = E0E379B72F55206F00CF1A3C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E0E379BE2F55206F00CF1A3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TVOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		E0E379BF2F55206F00CF1A3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = appletvos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				TVOS_DEPLOYMENT_TARGET = 26.2;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E0E379C12F55206F00CF1A3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PandaPlay/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		E0E379C22F55206F00CF1A3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PandaPlay/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+		E0E379C42F55206F00CF1A3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PandaPlay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PandaPlay";
+				TVOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		E0E379C52F55206F00CF1A3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PandaPlay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PandaPlay";
+				TVOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Release;
+		};
+		E0E379C72F55206F00CF1A3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlayUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = PandaPlay;
+			};
+			name = Debug;
+		};
+		E0E379C82F55206F00CF1A3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlayUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = PandaPlay;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E0E3799A2F55206D00CF1A3C /* Build configuration list for PBXProject "PandaPlay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0E379BE2F55206F00CF1A3C /* Debug */,
+				E0E379BF2F55206F00CF1A3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E0E379C02F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0E379C12F55206F00CF1A3C /* Debug */,
+				E0E379C22F55206F00CF1A3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E0E379C32F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlayTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0E379C42F55206F00CF1A3C /* Debug */,
+				E0E379C52F55206F00CF1A3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E0E379C62F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlayUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0E379C72F55206F00CF1A3C /* Debug */,
+				E0E379C82F55206F00CF1A3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E027E5A12F554FC90066E6F0 /* XCRemoteSwiftPackageReference "KSPlayer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kingslay/KSPlayer.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E027E5A22F554FC90066E6F0 /* KSPlayer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E027E5A12F554FC90066E6F0 /* XCRemoteSwiftPackageReference "KSPlayer" */;
+			productName = KSPlayer;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = E0E379972F55206D00CF1A3C /* Project object */;
+}
