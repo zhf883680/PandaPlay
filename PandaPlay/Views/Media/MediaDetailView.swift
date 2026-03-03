@@ -12,6 +12,7 @@ struct MediaDetailView: View {
 
     @EnvironmentObject var serverManager: ServerManager
     @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var toastManager: ToastManager
 
     @State private var fullItem: MediaItem?
     @State private var isLoading: Bool = true
@@ -274,9 +275,13 @@ struct MediaDetailView: View {
                 }
             }
         }
-        .navigationBarHidden(true)
         .navigationDestination(item: $selectedEpisode) { episode in
             PlayerView(mediaItem: episode)
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                ServerSwitcher()
+            }
         }
         .task {
             await loadFullItemDetails()
