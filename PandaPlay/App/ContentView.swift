@@ -10,18 +10,45 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var serverManager: ServerManager
     @EnvironmentObject var authManager: AuthManager
+    @State private var isLaunching: Bool = true
 
     var body: some View {
         Group {
-            if serverManager.hasConfiguredServer {
-                if authManager.isAuthenticated {
-                    HomeView()
-                } else {
-                    LoginView()
+            if isLaunching {
+                VStack(spacing: 12) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("加载中...")
+                        .foregroundColor(.secondary)
                 }
             } else {
-                ServerSetupView()
+                HomeView()
             }
+        }
+        .task {
+            await autoLoginIfNeeded()
+            await MainActor.run {
+                isLaunching = false
+            }
+        }
+    }
+
+    private func autoLoginIfNeeded() async {
+        guard !authManager.isAuthenticated,
+              let server = serverManager.currentServer else {
+            return
+        }
+
+        // Try to auto-login with saved credentials
+        let success = await authManager.tryAutoLogin(
+            serverURL: server.url,
+            serverId: server.id
+        )
+
+        if success {
+            print("✅ Auto-login successful for server: \(server.name)")
+        } else {
+            print("⚠️ Auto-login failed, need to login")
         }
     }
 }

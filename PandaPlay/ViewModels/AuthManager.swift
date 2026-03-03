@@ -10,6 +10,7 @@ import Combine
 
 class AuthManager: ObservableObject {
     @Published var isAuthenticated: Bool = false
+    @Published var isSwitchingServer: Bool = false
     @Published var currentUser: EmbyUser?
     @Published var accessToken: String?
     @Published var userId: String?
@@ -67,18 +68,57 @@ class AuthManager: ObservableObject {
         return false
     }
 
-    func logout(serverId: String? = nil) {
-        if let serverId = serverId ?? currentServerId {
-            keychain.delete(forKey: "server_\(serverId)_token")
-            keychain.delete(forKey: "server_\(serverId)_userId")
-        }
+    func switchToServer(server: EmbyServer) async throws {
+        // Clear current authentication state
+        isAuthenticated = false
+        currentUser = nil
+        accessToken = nil
+        userId = nil
+        currentServerId = server.id
 
+        // Try to load saved credentials and authenticate
+        if let (username, password) = loadSavedCredentials(serverId: server.id) {
+            do {
+                try await authenticate(serverURL: server.url, serverId: server.id, username: username, password: password)
+            } catch {
+                // Clear invalid credentials
+                keychain.delete(forKey: "server_\(server.id)_token")
+                keychain.delete(forKey: "server_\(server.id)_userId")
+                throw error
+            }
+        } else {
+            // No credentials found, throw error to trigger login
+            throw AuthError.noCredentials
+        }
+    }
+
+    func hasValidCredentials(for serverId: String) -> Bool {
+        return keychain.loadAccessToken(for: serverId) != nil &&
+               keychain.loadUserId(for: serverId) != nil
+    }
+
+    func clearSavedCredentials(for serverId: String) {
+        keychain.delete(forKey: "server_\(serverId)_token")
+        keychain.delete(forKey: "server_\(serverId)_userId")
+        keychain.delete(forKey: "server_\(serverId)_password")
+        keychain.delete(forKey: "server_\(serverId)_username")
+    }
+
+    func clearSession() {
         isAuthenticated = false
         currentUser = nil
         accessToken = nil
         userId = nil
         embyClient = nil
         currentServerId = nil
+    }
+
+    func logout(serverId: String? = nil) {
+        if let serverId = serverId ?? currentServerId {
+            clearSavedCredentials(for: serverId)
+        }
+
+        clearSession()
     }
 
     // MARK: - Token Management
@@ -89,5 +129,18 @@ class AuthManager: ObservableObject {
             headers["X-Emby-Token"] = token
         }
         return headers
+    }
+}
+
+// MARK: - Auth Errors
+
+enum AuthError: LocalizedError {
+    case noCredentials
+
+    var errorDescription: String? {
+        switch self {
+        case .noCredentials:
+            return "未找到保存的登录凭证"
+        }
     }
 }

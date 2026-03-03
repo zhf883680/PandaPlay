@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var serverManager: ServerManager
 
     var body: some View {
@@ -16,47 +15,11 @@ struct SettingsView: View {
             List {
                 // Server Section
                 Section {
-                    if let server = serverManager.currentServer {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(server.name)
-                                    .font(.headline)
-                                Text(server.url)
-                                    .font(DeviceType.current == .iPhone ? .caption2 : .caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            Spacer()
-                        }
-                    }
-
-                    NavigationLink("管理服务器") {
+                    NavigationLink("服务器管理") {
                         ServerManagerView()
                     }
                 } header: {
                     Text("服务器")
-                }
-
-                // User Section
-                Section {
-                    if let user = authManager.currentUser {
-                        HStack {
-                            Image(systemName: "person.circle.fill")
-                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
-                            VStack(alignment: .leading) {
-                                Text(user.name)
-                                    .font(.headline)
-                            }
-                            Spacer()
-                        }
-                    }
-
-                    Button("退出登录") {
-                        if let serverId = serverManager.currentServer?.id {
-                            authManager.logout(serverId: serverId)
-                        }
-                    }
-                } header: {
-                    Text("用户")
                 }
 
                 // About Section
@@ -71,8 +34,7 @@ struct SettingsView: View {
                     HStack {
                         Text("PandaPlay")
                         Spacer()
-                        Image(systemName: "play.rectangle.fill")
-                            .foregroundColor(.blue)
+                        AppLogoView(size: DeviceType.current == .iPhone ? 20 : 24)
                     }
                 } header: {
                     Text("关于")
@@ -87,4 +49,5 @@ struct SettingsView: View {
     SettingsView()
         .environmentObject(AuthManager())
         .environmentObject(ServerManager())
+        .environmentObject(ToastManager.shared)
 }

@@ -10,10 +10,13 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var serverManager: ServerManager
+    @EnvironmentObject var toastManager: ToastManager
 
     @StateObject private var viewModel = HomeViewModel()
     @State private var selectedItem: MediaItem?
     @State private var showSettings: Bool = false
+    @State private var showServerSetup: Bool = false
+    @State private var showLogin: Bool = false
 
     private var horizontalPadding: CGFloat {
         DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 40 : 80)
@@ -31,88 +34,10 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: sectionSpacing) {
-                    // Header
-                    HStack {
-                        Text("PandaPlay")
-                            .font(DeviceType.current == .iPhone ? .title3 : .title2)
-                            .bold()
-
-                        Spacer()
-
-                        Button(action: {
-                            showSettings = true
-                        }) {
-                            Image(systemName: "gearshape.fill")
-                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, horizontalPadding)
-                    .padding(.top, verticalPadding)
-
-                    // Loading State
-                    if viewModel.isLoading {
-                        VStack(spacing: 12) {
-                            ProgressView()
-                                .scaleEffect(DeviceType.current == .iPhone ? 1.2 : 2)
-                            Text("加载中...")
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(height: DeviceType.current == .iPhone ? 200 : 400)
-                    }
-                    // Content Rows
-                    else {
-                        // Resume Items
-                        if !viewModel.resumeItems.isEmpty {
-                            MediaRow(
-                                title: "继续观看",
-                                items: viewModel.resumeItems,
-                                serverURL: serverManager.currentServer?.url ?? "",
-                                onSelect: { item in
-                                    selectedItem = item
-                                }
-                            )
-                        }
-
-                        // Recent Movies
-                        if !viewModel.recentMovies.isEmpty {
-                            MediaRow(
-                                title: "最近添加",
-                                items: viewModel.recentMovies,
-                                serverURL: serverManager.currentServer?.url ?? "",
-                                onSelect: { item in
-                                    selectedItem = item
-                                }
-                            )
-                        }
-
-                        // Movies
-                        if !viewModel.movies.isEmpty {
-                            MediaRow(
-                                title: "电影",
-                                items: viewModel.movies,
-                                serverURL: serverManager.currentServer?.url ?? "",
-                                onSelect: { item in
-                                    selectedItem = item
-                                }
-                            )
-                        }
-
-                        // TV Shows
-                        if !viewModel.tvShows.isEmpty {
-                            MediaRow(
-                                title: "电视剧",
-                                items: viewModel.tvShows,
-                                serverURL: serverManager.currentServer?.url ?? "",
-                                onSelect: { item in
-                                    selectedItem = item
-                                }
-                            )
-                        }
-                    }
-
-                    Spacer(minLength: DeviceType.current == .iPhone ? 30 : 100)
+                    // Content based on state
+                    contentView
                 }
+                .padding(.top, verticalPadding)
             }
             .navigationDestination(isPresented: Binding(
                 get: { selectedItem != nil },
@@ -125,14 +50,248 @@ struct HomeView: View {
             .navigationDestination(isPresented: $showSettings) {
                 SettingsView()
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    ServerSwitcher()
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        showSettings = true
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(DeviceType.current == .iPhone ? .title3 : .title2)
+                    }
+                }
+            }
+            .sheet(isPresented: $showServerSetup) {
+                if let currentServer = serverManager.currentServer {
+                    ServerSetupView(editingServer: currentServer)
+                } else {
+                    ServerSetupView()
+                }
+            }
+            .sheet(isPresented: $showLogin) {
+                LoginView()
+            }
         }
         .task {
-            await viewModel.loadContent(
+            await refreshContentIfReady()
+        }
+        .onChange(of: serverManager.currentServer) { _ in
+            Task {
+                await refreshContentIfReady()
+            }
+        }
+        .onChange(of: authManager.isAuthenticated) { _ in
+            Task {
+                await refreshContentIfReady()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var contentView: some View {
+        if !serverManager.hasConfiguredServer {
+            serverNotConfiguredView
+        } else if authManager.isSwitchingServer {
+            VStack(spacing: 12) {
+                ProgressView()
+                    .scaleEffect(DeviceType.current == .iPhone ? 1.2 : 2)
+                Text("加载中...")
+                    .foregroundColor(.secondary)
+            }
+            .frame(height: DeviceType.current == .iPhone ? 200 : 400)
+        } else if !authManager.isAuthenticated {
+            loginRequiredView
+        } else if viewModel.isLoading {
+            // Loading State
+            VStack(spacing: 12) {
+                ProgressView()
+                    .scaleEffect(DeviceType.current == .iPhone ? 1.2 : 2)
+                Text("加载中...")
+                    .foregroundColor(.secondary)
+            }
+            .frame(height: DeviceType.current == .iPhone ? 200 : 400)
+        } else if viewModel.hasError {
+            // Error State
+            errorView
+        } else if !viewModel.hasContent {
+            // Empty State
+            emptyView
+        } else {
+            // Content Rows
+            contentRows
+        }
+    }
+
+    private var serverNotConfiguredView: some View {
+        VStack(spacing: DeviceType.current == .iPhone ? 16 : 24) {
+            Image(systemName: "server.rack")
+                .font(.system(size: DeviceType.current == .iPhone ? 48 : 64))
+                .foregroundColor(.secondary)
+
+            Text("还没有添加服务器")
+                .font(DeviceType.current == .iPhone ? .body : .title3)
+                .foregroundColor(.primary)
+
+            Text("请先添加 Emby/Jellyfin 服务器，然后就可以在首页浏览媒体列表")
+                .font(DeviceType.current == .iPhone ? .caption : .body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+
+            Button("添加服务器") {
+                showServerSetup = true
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, horizontalPadding)
+        .frame(minHeight: DeviceType.current == .iPhone ? 240 : 420)
+    }
+
+    private var loginRequiredView: some View {
+        VStack(spacing: DeviceType.current == .iPhone ? 16 : 24) {
+            Image(systemName: "person.crop.circle.badge.exclamationmark")
+                .font(.system(size: DeviceType.current == .iPhone ? 48 : 64))
+                .foregroundColor(.orange)
+
+            Text("未登录或登录已失效")
+                .font(DeviceType.current == .iPhone ? .body : .title3)
+                .foregroundColor(.primary)
+
+            if let server = serverManager.currentServer {
+                Text("当前服务器：\(server.name)")
+                    .font(DeviceType.current == .iPhone ? .caption : .body)
+                    .foregroundColor(.secondary)
+            }
+
+            Button("去登录") {
+                showLogin = true
+            }
+            .buttonStyle(.borderedProminent)
+
+            Button("编辑服务器") {
+                showServerSetup = true
+            }
+            .buttonStyle(.bordered)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, horizontalPadding)
+        .frame(minHeight: DeviceType.current == .iPhone ? 240 : 420)
+    }
+
+    private var errorView: some View {
+        VStack(spacing: DeviceType.current == .iPhone ? 16 : 24) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: DeviceType.current == .iPhone ? 48 : 64))
+                .foregroundColor(.orange)
+
+            if let message = viewModel.errorMessage {
+                Text(message)
+                    .font(DeviceType.current == .iPhone ? .body : .title3)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button("重试") {
+                Task {
+                    await viewModel.loadContent(
+                        serverURL: serverManager.currentServer?.url ?? "",
+                        userId: authManager.userId ?? "",
+                        accessToken: authManager.accessToken ?? ""
+                    )
+                }
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, horizontalPadding)
+        .frame(minHeight: DeviceType.current == .iPhone ? 200 : 400)
+    }
+
+    private var emptyView: some View {
+        VStack(spacing: DeviceType.current == .iPhone ? 16 : 24) {
+            Image(systemName: "film.stack")
+                .font(.system(size: DeviceType.current == .iPhone ? 48 : 64))
+                .foregroundColor(.gray)
+
+            Text("暂无内容")
+                .font(DeviceType.current == .iPhone ? .body : .title3)
+                .foregroundColor(.secondary)
+
+            Text("服务器上还没有媒体内容，或者您没有访问权限")
+                .font(DeviceType.current == .iPhone ? .caption : .body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, horizontalPadding)
+        .frame(minHeight: DeviceType.current == .iPhone ? 200 : 400)
+    }
+
+    private func refreshContentIfReady() async {
+        guard authManager.isAuthenticated else {
+            return
+        }
+
+        await viewModel.loadContent(
+            serverURL: serverManager.currentServer?.url ?? "",
+            userId: authManager.userId ?? "",
+            accessToken: authManager.accessToken ?? ""
+        )
+    }
+
+    @ViewBuilder
+    private var contentRows: some View {
+        // Resume Items
+        if !viewModel.resumeItems.isEmpty {
+            MediaRow(
+                title: "继续观看",
+                items: viewModel.resumeItems,
                 serverURL: serverManager.currentServer?.url ?? "",
-                userId: authManager.userId ?? "",
-                accessToken: authManager.accessToken ?? ""
+                onSelect: { item in
+                    selectedItem = item
+                }
             )
         }
+
+        // Recent Movies
+        if !viewModel.recentMovies.isEmpty {
+            MediaRow(
+                title: "最近添加",
+                items: viewModel.recentMovies,
+                serverURL: serverManager.currentServer?.url ?? "",
+                onSelect: { item in
+                    selectedItem = item
+                }
+            )
+        }
+
+        // Movies
+        if !viewModel.movies.isEmpty {
+            MediaRow(
+                title: "电影",
+                items: viewModel.movies,
+                serverURL: serverManager.currentServer?.url ?? "",
+                onSelect: { item in
+                    selectedItem = item
+                }
+            )
+        }
+
+        // TV Shows
+        if !viewModel.tvShows.isEmpty {
+            MediaRow(
+                title: "电视剧",
+                items: viewModel.tvShows,
+                serverURL: serverManager.currentServer?.url ?? "",
+                onSelect: { item in
+                    selectedItem = item
+                }
+            )
+        }
+
+        Spacer(minLength: DeviceType.current == .iPhone ? 30 : 100)
     }
 }
 

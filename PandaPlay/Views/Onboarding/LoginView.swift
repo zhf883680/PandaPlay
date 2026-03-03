@@ -17,6 +17,7 @@ struct LoginView: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var isAttemptingAutoLogin: Bool = true
+    @State private var showEditServerSheet: Bool = false
     @FocusState private var focusedField: Field?
 
     enum Field {
@@ -41,6 +42,15 @@ struct LoginView: View {
 
     var body: some View {
         VStack(spacing: spacing) {
+            HStack {
+                Spacer()
+                Button("关闭") {
+                    dismiss()
+                }
+                .foregroundColor(.secondary)
+                .font(DeviceType.current == .iPhone ? .subheadline : .headline)
+            }
+
             // Header
             VStack(spacing: DeviceType.current == .iPhone ? 12 : 20) {
                 Image(systemName: "person.circle.fill")
@@ -120,19 +130,23 @@ struct LoginView: View {
             }
 
             // Change Server Button
-            Button("更改服务器") {
-                // Clear current server and go back to setup
-                authManager.logout()
-                serverManager.clearAllServers()
+            Button("编辑服务器") {
+                showEditServerSheet = true
             }
             .foregroundColor(.secondary)
             .font(DeviceType.current == .iPhone ? .caption : .subheadline)
+            .disabled(serverManager.currentServer == nil)
 
             Spacer()
         }
         .padding(DeviceType.current == .iPhone ? 20 : horizontalPadding)
         .onAppear {
             attemptAutoLogin()
+        }
+        .sheet(isPresented: $showEditServerSheet) {
+            if let currentServer = serverManager.currentServer {
+                ServerSetupView(editingServer: currentServer)
+            }
         }
     }
 
@@ -188,6 +202,7 @@ struct LoginView: View {
 
                 await MainActor.run {
                     isLoading = false
+                    dismiss()
                 }
             } catch {
                 await MainActor.run {
