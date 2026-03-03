@@ -1,5 +1,16 @@
 # PandaPlay - Emby/Jellyfin Player
 
+> **⚠️ IMPORTANT: Early Development Stage**
+>
+> This project is in **early alpha** stage with **many bugs and limitations**. Basic playback functionality works, but:
+>
+> - **Expect crashes and instability**
+> - **Many features are incomplete or broken**
+> - **Performance needs significant optimization**
+> - **UI/UX is still being refined**
+>
+> We are actively working on improvements. Use at your own risk and please report issues!
+
 An advanced media player for Emby/Jellyfin servers with multi-platform support.
 
 [中文文档](README_CN.md)

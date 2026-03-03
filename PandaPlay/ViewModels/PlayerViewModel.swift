@@ -8,7 +8,11 @@
 import Foundation
 import SwiftUI
 import Combine
+#if os(iOS)
 import MobileVLCKit
+#elseif os(tvOS)
+import TVVLCKit
+#endif
 
 // MARK: - Subtitle Track Model
 struct SubtitleTrack: Identifiable, Equatable {
@@ -94,7 +98,7 @@ class PlayerViewModel: NSObject, ObservableObject {
 
         var tracks: [SubtitleTrack] = [.off]
 
-        // MobileVLCKit - get subtitle tracks from player
+        // Get subtitle tracks from player
         let subtitleIndexCount = player.numberOfSubtitlesTracks
 
         print("🎬 [PlayerViewModel] numberOfSubtitlesTracks: \(subtitleIndexCount)")

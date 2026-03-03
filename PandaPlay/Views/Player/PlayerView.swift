@@ -7,9 +7,16 @@
 
 import SwiftUI
 import AVFoundation
+#if os(iOS)
 import MobileVLCKit
+import UIKit
+#elseif os(tvOS)
+import TVVLCKit
+import TVUIKit
+#endif
 
-// MARK: - UIViewRepresentable for VLCMediaPlayer
+#if os(iOS)
+// MARK: - UIViewRepresentable for VLCMediaPlayer (iOS)
 struct VLCPlayerView: UIViewRepresentable {
     let player: VLCMediaPlayer?
 
@@ -30,6 +37,29 @@ struct VLCPlayerView: UIViewRepresentable {
         }
     }
 }
+#elseif os(tvOS)
+// MARK: - UIViewRepresentable for VLCMediaPlayer (tvOS)
+struct VLCPlayerView: UIViewRepresentable {
+    let player: VLCMediaPlayer?
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .black
+
+        if let player = player {
+            player.drawable = view
+        }
+
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        if let player = player, player.drawable == nil {
+            player.drawable = uiView
+        }
+    }
+}
+#endif
 
 struct PlayerView: View {
     let mediaItem: MediaItem
@@ -102,13 +132,15 @@ struct PlayerView: View {
                 .padding(DeviceType.current == .iPhone ? 20 : 40)
             }
         }
+        #if os(iOS)
         .onTapGesture(count: 2) {
-            // Double tap to toggle controls
+            // Double tap to toggle controls on iOS
             withAnimation {
                 showControls.toggle()
             }
             resetControlsTimer()
         }
+        #endif
         .task {
             if let serverURL = serverManager.currentServer?.url,
                let userId = authManager.userId,
@@ -238,6 +270,7 @@ struct PlayerView: View {
                             }
                         }
                     }
+                    #if os(iOS)
                     .confirmationDialog("选择字幕", isPresented: $showSubtitleMenu, titleVisibility: .visible) {
                         ForEach(viewModel.subtitleTracks) { track in
                             Button(track.displayName) {
@@ -245,6 +278,15 @@ struct PlayerView: View {
                             }
                         }
                     }
+                    #elseif os(tvOS)
+                    .contextMenu {
+                        ForEach(viewModel.subtitleTracks) { track in
+                            Button(track.displayName) {
+                                viewModel.setSubtitleTrack(index: track.id)
+                            }
+                        }
+                    }
+                    #endif
 
                     // Play/Pause
                     Button(action: {
