@@ -17,6 +17,7 @@ struct HomeView: View {
     @State private var showSettings: Bool = false
     @State private var showServerSetup: Bool = false
     @State private var showLogin: Bool = false
+    @State private var selectedSection: HomeMediaSection?
 
     private var horizontalPadding: CGFloat {
         DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 40 : 80)
@@ -46,6 +47,14 @@ struct HomeView: View {
                 if let item = selectedItem {
                     MediaDetailView(mediaItem: item)
                 }
+            }
+            .navigationDestination(item: $selectedSection) { section in
+                MoreMediaListView(
+                    section: section,
+                    serverURL: serverManager.currentServer?.url ?? "",
+                    userId: authManager.userId ?? "",
+                    accessToken: authManager.accessToken ?? ""
+                )
             }
             .navigationDestination(isPresented: $showSettings) {
                 SettingsView()
@@ -249,6 +258,9 @@ struct HomeView: View {
                 title: "继续观看",
                 items: viewModel.resumeItems,
                 serverURL: serverManager.currentServer?.url ?? "",
+                onMore: {
+                    selectedSection = .resume
+                },
                 onSelect: { item in
                     selectedItem = item
                 }
@@ -261,6 +273,9 @@ struct HomeView: View {
                 title: "最近添加",
                 items: viewModel.recentMovies,
                 serverURL: serverManager.currentServer?.url ?? "",
+                onMore: {
+                    selectedSection = .recent
+                },
                 onSelect: { item in
                     selectedItem = item
                 }
@@ -273,6 +288,9 @@ struct HomeView: View {
                 title: "电影",
                 items: viewModel.movies,
                 serverURL: serverManager.currentServer?.url ?? "",
+                onMore: {
+                    selectedSection = .movies
+                },
                 onSelect: { item in
                     selectedItem = item
                 }
@@ -285,6 +303,9 @@ struct HomeView: View {
                 title: "电视剧",
                 items: viewModel.tvShows,
                 serverURL: serverManager.currentServer?.url ?? "",
+                onMore: {
+                    selectedSection = .tvShows
+                },
                 onSelect: { item in
                     selectedItem = item
                 }
@@ -299,7 +320,9 @@ struct MediaRow: View {
     let title: String
     let items: [MediaItem]
     var serverURL: String
+    var onMore: (() -> Void)?
     var onSelect: ((MediaItem) -> Void)?
+    private let maxPreviewCount: Int = 10
 
     private var itemSpacing: CGFloat {
         DeviceType.current == .iPhone ? 12 : (DeviceType.current == .iPad ? 20 : 40)
@@ -311,14 +334,25 @@ struct MediaRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(DeviceType.current == .iPhone ? .headline : .title2)
-                .bold()
-                .padding(.horizontal, horizontalPadding)
+            HStack {
+                Text(title)
+                    .font(DeviceType.current == .iPhone ? .headline : .title2)
+                    .bold()
+
+                Spacer(minLength: 8)
+
+                if items.count > maxPreviewCount, let onMore {
+                    Button("更多") {
+                        onMore()
+                    }
+                    .font(DeviceType.current == .iPhone ? .subheadline : .headline)
+                }
+            }
+            .padding(.horizontal, horizontalPadding)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: itemSpacing) {
-                    ForEach(items) { item in
+                    ForEach(Array(items.prefix(maxPreviewCount))) { item in
                         MediaPoster(item: item, serverURL: serverURL)
                             .onTapGesture {
                                 onSelect?(item)
@@ -405,7 +439,9 @@ struct MediaPoster: View {
             // Title
             Text(item.name ?? "")
                 .font(DeviceType.current == .iPhone ? .caption2 : .caption)
-                .lineLimit(2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .truncationMode(.tail)
                 .frame(width: posterWidth)
                 #if !os(iOS)
                 .opacity(isFocused ? 1.0 : 0.7)
@@ -415,6 +451,28 @@ struct MediaPoster: View {
         .focusable()
         .focused($isFocused)
         #endif
+    }
+}
+
+enum HomeMediaSection: String, Identifiable, CaseIterable {
+    case resume
+    case recent
+    case movies
+    case tvShows
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .resume:
+            return "继续观看"
+        case .recent:
+            return "最近添加"
+        case .movies:
+            return "电影"
+        case .tvShows:
+            return "电视剧"
+        }
     }
 }
 
