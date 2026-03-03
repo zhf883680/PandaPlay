@@ -276,7 +276,6 @@ struct PlayerView: View {
                         )
                         #elseif os(tvOS)
                         .focusable()
-                        .digitalCrownRotation($viewModel.currentTime, from: 0, through: viewModel.duration, sensitivity: .medium)
                         #endif
                     }
                     .frame(height: DeviceType.current == .iPhone ? 4 : 8)

@@ -7,7 +7,9 @@
 
 import SwiftUI
 
+#if os(tvOS)
 @main
+#endif
 struct PandaPlayApp: App {
     @StateObject private var serverManager = ServerManager()
     @StateObject private var authManager = AuthManager()
@@ -25,6 +27,7 @@ struct PandaPlayApp: App {
 
 // MARK: - Root View
 
+#if os(tvOS)
 struct RootView: View {
     @EnvironmentObject var errorManager: ErrorManager
     @EnvironmentObject var toastManager: ToastManager
@@ -83,3 +86,4 @@ struct RootView: View {
         }
     }
 }
+#endif
