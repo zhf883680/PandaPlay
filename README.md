@@ -17,34 +17,75 @@ An advanced media player for Emby/Jellyfin servers with multi-platform support.
 
 ## Features
 
-- **Multi-Platform Support**
-  - iOS (iPhone & iPad) with native touch interface
-  - tvOS with Siri Remote support
-  - Responsive design optimized for each device type
+### ✅ Completed Features
 
-- **Server Connection**
-  - Emby/Jellyfin server authentication
-  - Multiple server management with secure storage (Keychain)
+#### Multi-Platform Support
+- iOS (iPhone & iPad) with native touch interface
+- tvOS with Siri Remote support
+- Responsive design optimized for each device type
 
-- **Media Library**
-  - Browse movies and TV shows
-  - View recently added and resume items
-  - Season and episode navigation
+#### Server Connection & Management
+- Emby/Jellyfin server authentication
+- **Multiple server management** with secure storage (Keychain)
+- Easy server switching
+- Auto-connect to last used server
 
-- **Video Playback**
-  - **Wide format support** via MobileVLCKit (MKV, MP4, AVI, etc.)
-  - Direct streaming (no server transcoding)
-  - Hardware-accelerated decoding
-  - **Subtitle track selection with on/off toggle**
-  - Multiple audio track support
-  - **Comprehensive player controls** (play/pause, seek, progress bar)
-  - Auto-hide controls after 4 seconds of inactivity
+#### Media Library
+- Browse movies and TV shows
+- View recently added and resume items
+- Season and episode navigation
+- **Display media data** (posters, backdrops, metadata)
 
-- **User Experience**
-  - Native iOS/tvOS interface
-  - Focus-based navigation on tvOS
-  - Smooth image loading with blur hash placeholders
-  - Secure password input with SecureField
+#### Video Playback
+- **Wide format support** via MobileVLCKit (MKV, MP4, AVI, etc.)
+- Direct streaming (no server transcoding)
+- Hardware-accelerated decoding
+- **Subtitle track selection** with on/off toggle
+- Multiple audio track support
+- **Comprehensive player controls** (play/pause, seek, progress bar)
+- Auto-hide controls after 4 seconds of inactivity
+
+#### User Experience
+- Native iOS/tvOS interface
+- Focus-based navigation on tvOS
+- Smooth image loading with blur hash placeholders
+- Secure password input with SecureField
+
+### 🚧 Planned Features
+
+#### Data & Performance
+- **Data optimization** (caching, pagination, lazy loading)
+- **Cache calculation** and management
+- Network request optimization
+
+#### User Interface
+- **Page optimization** and refinement
+- Enhanced navigation patterns
+- More responsive layouts
+
+#### Playback Features
+- **Playback history** tracking
+- Continue watching across devices
+- **Playback settings** (speed, skip intervals)
+- **Subtitle settings** (size, color, position)
+- **Danmu (bullet comments)** support
+
+#### Library Management
+- **Search functionality** (media, episodes)
+- **Favorites/collections** feature
+- Watchlist management
+- Custom playlists
+
+#### Settings & Sync
+- **Sync settings** across devices
+- Cloud synchronization
+- Backup and restore settings
+
+#### Advanced Features
+- Offline download support
+- Background playback
+- Picture-in-picture mode
+- Custom themes
 
 ## Requirements
 
