@@ -7,10 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D9DD6C841747A5AA67A298F6 /* libPods-PandaPlay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CD2EEEA8ABA4B23475744CC1 /* libPods-PandaPlay.a */; };
+		5FCA6334BB126DB142EBCF65 /* Pods_PandaPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A94B3F3FCBAB09D6AF5CEEFA /* Pods_PandaPlay.framework */; };
+		D4CEC1E99BEF5AAB9966108D /* Pods_PandaPlay_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 447B266C8262D42EB1C41105 /* Pods_PandaPlay_iOS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		E06B74382F56892E008C3646 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E0E379972F55206D00CF1A3C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E06B742A2F56892D008C3646;
+			remoteInfo = "PandaPlay-iOS";
+		};
+		E06B74422F56892E008C3646 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E0E379972F55206D00CF1A3C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E06B742A2F56892D008C3646;
+			remoteInfo = "PandaPlay-iOS";
+		};
 		E0E379AD2F55206F00CF1A3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E0E379972F55206D00CF1A3C /* Project object */;
@@ -29,8 +44,14 @@
 
 /* Begin PBXFileReference section */
 		40E01D82D908C8369264ACDB /* Pods-PandaPlay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PandaPlay.debug.xcconfig"; path = "Target Support Files/Pods-PandaPlay/Pods-PandaPlay.debug.xcconfig"; sourceTree = "<group>"; };
+		447B266C8262D42EB1C41105 /* Pods_PandaPlay_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PandaPlay_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F14AAC875D41CBC8D25501A /* Pods-PandaPlay.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PandaPlay.release.xcconfig"; path = "Target Support Files/Pods-PandaPlay/Pods-PandaPlay.release.xcconfig"; sourceTree = "<group>"; };
-		CD2EEEA8ABA4B23475744CC1 /* libPods-PandaPlay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PandaPlay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		77BB87DE3B3DD5D19B53FB55 /* Pods-PandaPlay-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PandaPlay-iOS.debug.xcconfig"; path = "Target Support Files/Pods-PandaPlay-iOS/Pods-PandaPlay-iOS.debug.xcconfig"; sourceTree = "<group>"; };
+		A94B3F3FCBAB09D6AF5CEEFA /* Pods_PandaPlay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PandaPlay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA43DE738478411594582643 /* Pods-PandaPlay-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PandaPlay-iOS.release.xcconfig"; path = "Target Support Files/Pods-PandaPlay-iOS/Pods-PandaPlay-iOS.release.xcconfig"; sourceTree = "<group>"; };
+		E06B742B2F56892D008C3646 /* PandaPlay-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PandaPlay-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E06B74372F56892E008C3646 /* PandaPlay-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PandaPlay-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E06B74412F56892E008C3646 /* PandaPlay-iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PandaPlay-iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E3799F2F55206D00CF1A3C /* PandaPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PandaPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E379AC2F55206F00CF1A3C /* PandaPlayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PandaPlayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E379B62F55206F00CF1A3C /* PandaPlayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PandaPlayUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -47,6 +68,21 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		E06B742C2F56892D008C3646 /* PandaPlay-iOS */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "PandaPlay-iOS";
+			sourceTree = "<group>";
+		};
+		E06B743A2F56892E008C3646 /* PandaPlay-iOSTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "PandaPlay-iOSTests";
+			sourceTree = "<group>";
+		};
+		E06B74442F56892E008C3646 /* PandaPlay-iOSUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "PandaPlay-iOSUITests";
+			sourceTree = "<group>";
+		};
 		E0E379A12F55206D00CF1A3C /* PandaPlay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -57,26 +93,44 @@
 		};
 		E0E379AF2F55206F00CF1A3C /* PandaPlayTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = PandaPlayTests;
 			sourceTree = "<group>";
 		};
 		E0E379B92F55206F00CF1A3C /* PandaPlayUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = PandaPlayUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E06B74282F56892D008C3646 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4CEC1E99BEF5AAB9966108D /* Pods_PandaPlay_iOS.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E06B74342F56892E008C3646 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E06B743E2F56892E008C3646 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0E3799C2F55206D00CF1A3C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D9DD6C841747A5AA67A298F6 /* libPods-PandaPlay.a in Frameworks */,
+				5FCA6334BB126DB142EBCF65 /* Pods_PandaPlay.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +156,8 @@
 			children = (
 				40E01D82D908C8369264ACDB /* Pods-PandaPlay.debug.xcconfig */,
 				5F14AAC875D41CBC8D25501A /* Pods-PandaPlay.release.xcconfig */,
+				77BB87DE3B3DD5D19B53FB55 /* Pods-PandaPlay-iOS.debug.xcconfig */,
+				AA43DE738478411594582643 /* Pods-PandaPlay-iOS.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -112,6 +168,9 @@
 				E0E379A12F55206D00CF1A3C /* PandaPlay */,
 				E0E379AF2F55206F00CF1A3C /* PandaPlayTests */,
 				E0E379B92F55206F00CF1A3C /* PandaPlayUITests */,
+				E06B742C2F56892D008C3646 /* PandaPlay-iOS */,
+				E06B743A2F56892E008C3646 /* PandaPlay-iOSTests */,
+				E06B74442F56892E008C3646 /* PandaPlay-iOSUITests */,
 				E0E379A02F55206D00CF1A3C /* Products */,
 				167DA416A48DDB38326816AB /* Pods */,
 				F6E38784B2EC47D5D78ACE85 /* Frameworks */,
@@ -124,6 +183,9 @@
 				E0E3799F2F55206D00CF1A3C /* PandaPlay.app */,
 				E0E379AC2F55206F00CF1A3C /* PandaPlayTests.xctest */,
 				E0E379B62F55206F00CF1A3C /* PandaPlayUITests.xctest */,
+				E06B742B2F56892D008C3646 /* PandaPlay-iOS.app */,
+				E06B74372F56892E008C3646 /* PandaPlay-iOSTests.xctest */,
+				E06B74412F56892E008C3646 /* PandaPlay-iOSUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,7 +193,8 @@
 		F6E38784B2EC47D5D78ACE85 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				CD2EEEA8ABA4B23475744CC1 /* libPods-PandaPlay.a */,
+				A94B3F3FCBAB09D6AF5CEEFA /* Pods_PandaPlay.framework */,
+				447B266C8262D42EB1C41105 /* Pods_PandaPlay_iOS.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -139,6 +202,71 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E06B742A2F56892D008C3646 /* PandaPlay-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E06B74492F56892E008C3646 /* Build configuration list for PBXNativeTarget "PandaPlay-iOS" */;
+			buildPhases = (
+				64A2D14D748181941528B094 /* [CP] Check Pods Manifest.lock */,
+				E06B74272F56892D008C3646 /* Sources */,
+				E06B74282F56892D008C3646 /* Frameworks */,
+				E06B74292F56892D008C3646 /* Resources */,
+				4D599EE91FB1DFB9331B7AB4 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E06B742C2F56892D008C3646 /* PandaPlay-iOS */,
+				E0E379A12F55206D00CF1A3C /* PandaPlay */,
+			);
+			name = "PandaPlay-iOS";
+			productName = "PandaPlay-iOS";
+			productReference = E06B742B2F56892D008C3646 /* PandaPlay-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E06B74362F56892E008C3646 /* PandaPlay-iOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E06B744C2F56892E008C3646 /* Build configuration list for PBXNativeTarget "PandaPlay-iOSTests" */;
+			buildPhases = (
+				E06B74332F56892E008C3646 /* Sources */,
+				E06B74342F56892E008C3646 /* Frameworks */,
+				E06B74352F56892E008C3646 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E06B74392F56892E008C3646 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E06B743A2F56892E008C3646 /* PandaPlay-iOSTests */,
+			);
+			name = "PandaPlay-iOSTests";
+			productName = "PandaPlay-iOSTests";
+			productReference = E06B74372F56892E008C3646 /* PandaPlay-iOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E06B74402F56892E008C3646 /* PandaPlay-iOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E06B744F2F56892E008C3646 /* Build configuration list for PBXNativeTarget "PandaPlay-iOSUITests" */;
+			buildPhases = (
+				E06B743D2F56892E008C3646 /* Sources */,
+				E06B743E2F56892E008C3646 /* Frameworks */,
+				E06B743F2F56892E008C3646 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E06B74432F56892E008C3646 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E06B74442F56892E008C3646 /* PandaPlay-iOSUITests */,
+			);
+			name = "PandaPlay-iOSUITests";
+			productName = "PandaPlay-iOSUITests";
+			productReference = E06B74412F56892E008C3646 /* PandaPlay-iOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		E0E3799E2F55206D00CF1A3C /* PandaPlay */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E0E379C02F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlay" */;
@@ -213,6 +341,17 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
+					E06B742A2F56892D008C3646 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					E06B74362F56892E008C3646 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = E06B742A2F56892D008C3646;
+					};
+					E06B74402F56892E008C3646 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = E06B742A2F56892D008C3646;
+					};
 					E0E3799E2F55206D00CF1A3C = {
 						CreatedOnToolsVersion = 26.3;
 					};
@@ -243,11 +382,35 @@
 				E0E3799E2F55206D00CF1A3C /* PandaPlay */,
 				E0E379AB2F55206F00CF1A3C /* PandaPlayTests */,
 				E0E379B52F55206F00CF1A3C /* PandaPlayUITests */,
+				E06B742A2F56892D008C3646 /* PandaPlay-iOS */,
+				E06B74362F56892E008C3646 /* PandaPlay-iOSTests */,
+				E06B74402F56892E008C3646 /* PandaPlay-iOSUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E06B74292F56892D008C3646 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E06B74352F56892E008C3646 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E06B743F2F56892E008C3646 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0E3799D2F55206D00CF1A3C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -294,6 +457,49 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		4D599EE91FB1DFB9331B7AB4 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay-iOS/Pods-PandaPlay-iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay-iOS/Pods-PandaPlay-iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PandaPlay-iOS/Pods-PandaPlay-iOS-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		64A2D14D748181941528B094 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PandaPlay-iOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		7373980299AB67ED127E0126 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -302,9 +508,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay/Pods-PandaPlay-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay/Pods-PandaPlay-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -314,6 +524,27 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E06B74272F56892D008C3646 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E06B74332F56892E008C3646 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E06B743D2F56892E008C3646 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0E3799B2F55206D00CF1A3C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -338,6 +569,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		E06B74392F56892E008C3646 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E06B742A2F56892D008C3646 /* PandaPlay-iOS */;
+			targetProxy = E06B74382F56892E008C3646 /* PBXContainerItemProxy */;
+		};
+		E06B74432F56892E008C3646 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E06B742A2F56892D008C3646 /* PandaPlay-iOS */;
+			targetProxy = E06B74422F56892E008C3646 /* PBXContainerItemProxy */;
+		};
 		E0E379AE2F55206F00CF1A3C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E0E3799E2F55206D00CF1A3C /* PandaPlay */;
@@ -351,6 +592,180 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		E06B744A2F56892E008C3646 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 77BB87DE3B3DD5D19B53FB55 /* Pods-PandaPlay-iOS.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pandaplay.emby.PandaPlay-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E06B744B2F56892E008C3646 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA43DE738478411594582643 /* Pods-PandaPlay-iOS.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pandaplay.emby.PandaPlay-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E06B744D2F56892E008C3646 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pandaplay.emby.PandaPlay-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PandaPlay-iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PandaPlay-iOS";
+			};
+			name = Debug;
+		};
+		E06B744E2F56892E008C3646 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pandaplay.emby.PandaPlay-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PandaPlay-iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PandaPlay-iOS";
+			};
+			name = Release;
+		};
+		E06B74502F56892E008C3646 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pandaplay.emby.PandaPlay-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "PandaPlay-iOS";
+			};
+			name = Debug;
+		};
+		E06B74512F56892E008C3646 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 398C6FWMAW;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pandaplay.emby.PandaPlay-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "PandaPlay-iOS";
+			};
+			name = Release;
+		};
 		E0E379BE2F55206F00CF1A3C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -500,14 +915,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlay;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,3";
+				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Debug;
@@ -536,14 +951,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlay;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,3";
+				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Release;
@@ -635,6 +1050,33 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E06B74492F56892E008C3646 /* Build configuration list for PBXNativeTarget "PandaPlay-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E06B744A2F56892E008C3646 /* Debug */,
+				E06B744B2F56892E008C3646 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E06B744C2F56892E008C3646 /* Build configuration list for PBXNativeTarget "PandaPlay-iOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E06B744D2F56892E008C3646 /* Debug */,
+				E06B744E2F56892E008C3646 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E06B744F2F56892E008C3646 /* Build configuration list for PBXNativeTarget "PandaPlay-iOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E06B74502F56892E008C3646 /* Debug */,
+				E06B74512F56892E008C3646 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E0E3799A2F55206D00CF1A3C /* Build configuration list for PBXProject "PandaPlay" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
