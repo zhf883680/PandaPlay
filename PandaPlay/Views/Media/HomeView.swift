@@ -8,15 +8,17 @@
 import SwiftUI
 
 struct HomeView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var serverManager: ServerManager
     @EnvironmentObject var toastManager: ToastManager
 
     @StateObject private var viewModel = HomeViewModel()
-    @State private var selectedItem: MediaItem?
+    @State private var selectedDestination: HomeNavigationDestination?
     @State private var showSettings: Bool = false
     @State private var showServerSetup: Bool = false
     @State private var showLogin: Bool = false
+    @State private var showSearch: Bool = false
     @State private var selectedSection: HomeMediaSection?
 
     private var horizontalPadding: CGFloat {
@@ -40,12 +42,12 @@ struct HomeView: View {
                 }
                 .padding(.top, verticalPadding)
             }
-            .navigationDestination(isPresented: Binding(
-                get: { selectedItem != nil },
-                set: { if !$0 { selectedItem = nil } }
-            )) {
-                if let item = selectedItem {
+            .navigationDestination(item: $selectedDestination) { destination in
+                switch destination {
+                case .detail(let item):
                     MediaDetailView(mediaItem: item)
+                case .player(let item):
+                    PlayerView(mediaItem: item)
                 }
             }
             .navigationDestination(item: $selectedSection) { section in
@@ -59,16 +61,32 @@ struct HomeView: View {
             .navigationDestination(isPresented: $showSettings) {
                 SettingsView()
             }
+            .navigationDestination(isPresented: $showSearch) {
+                SearchView(
+                    serverURL: serverManager.currentServer?.url ?? "",
+                    userId: authManager.userId ?? "",
+                    accessToken: authManager.accessToken ?? ""
+                )
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     ServerSwitcher()
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        showSettings = true
-                    }) {
-                        Image(systemName: "gearshape.fill")
-                            .font(DeviceType.current == .iPhone ? .title3 : .title2)
+                    HStack(spacing: 14) {
+                        Button(action: {
+                            showSearch = true
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
+                        }
+
+                        Button(action: {
+                            showSettings = true
+                        }) {
+                            Image(systemName: "gearshape.fill")
+                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
+                        }
                     }
                 }
             }
@@ -86,12 +104,23 @@ struct HomeView: View {
         .task {
             await refreshContentIfReady()
         }
+        .onAppear {
+            Task {
+                await refreshContentIfReady()
+            }
+        }
         .onChange(of: serverManager.currentServer) { _ in
             Task {
                 await refreshContentIfReady()
             }
         }
         .onChange(of: authManager.isAuthenticated) { _ in
+            Task {
+                await refreshContentIfReady()
+            }
+        }
+        .onChange(of: scenePhase) { newPhase in
+            guard newPhase == .active else { return }
             Task {
                 await refreshContentIfReady()
             }
@@ -258,26 +287,9 @@ struct HomeView: View {
                 title: "继续观看",
                 items: viewModel.resumeItems,
                 serverURL: serverManager.currentServer?.url ?? "",
-                onMore: {
-                    selectedSection = .resume
-                },
+                displayMode: .resume,
                 onSelect: { item in
-                    selectedItem = item
-                }
-            )
-        }
-
-        // Recent Movies
-        if !viewModel.recentMovies.isEmpty {
-            MediaRow(
-                title: "最近添加",
-                items: viewModel.recentMovies,
-                serverURL: serverManager.currentServer?.url ?? "",
-                onMore: {
-                    selectedSection = .recent
-                },
-                onSelect: { item in
-                    selectedItem = item
+                    selectedDestination = .player(item)
                 }
             )
         }
@@ -292,7 +304,7 @@ struct HomeView: View {
                     selectedSection = .movies
                 },
                 onSelect: { item in
-                    selectedItem = item
+                    selectedDestination = .detail(item)
                 }
             )
         }
@@ -307,7 +319,7 @@ struct HomeView: View {
                     selectedSection = .tvShows
                 },
                 onSelect: { item in
-                    selectedItem = item
+                    selectedDestination = .detail(item)
                 }
             )
         }
@@ -320,6 +332,7 @@ struct MediaRow: View {
     let title: String
     let items: [MediaItem]
     var serverURL: String
+    var displayMode: MediaPosterDisplayMode = .standard
     var onMore: (() -> Void)?
     var onSelect: ((MediaItem) -> Void)?
     private let maxPreviewCount: Int = 10
@@ -333,6 +346,8 @@ struct MediaRow: View {
     }
 
     var body: some View {
+        let previewItems = Array(items.prefix(maxPreviewCount))
+
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(title)
@@ -341,7 +356,7 @@ struct MediaRow: View {
 
                 Spacer(minLength: 8)
 
-                if items.count > maxPreviewCount, let onMore {
+                if title != "继续观看", items.count > maxPreviewCount, let onMore {
                     Button("更多") {
                         onMore()
                     }
@@ -352,14 +367,22 @@ struct MediaRow: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: itemSpacing) {
-                    ForEach(Array(items.prefix(maxPreviewCount))) { item in
-                        MediaPoster(item: item, serverURL: serverURL)
-                            .onTapGesture {
-                                onSelect?(item)
-                            }
+                    ForEach(previewItems.indices, id: \.self) { index in
+                        let item = previewItems[index]
+                        Button {
+                            onSelect?(item)
+                        } label: {
+                            MediaPoster(
+                                item: item,
+                                serverURL: serverURL,
+                                displayMode: displayMode
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .contentShape(Rectangle())
                     }
                 }
-                .padding(.horizontal, horizontalPadding - 8)
+                .padding(.horizontal, horizontalPadding)
             }
             #if !os(iOS)
             .focusSection()
@@ -371,9 +394,7 @@ struct MediaRow: View {
 struct MediaPoster: View {
     let item: MediaItem
     let serverURL: String
-    #if !os(iOS)
-    @FocusState private var isFocused: Bool
-    #endif
+    var displayMode: MediaPosterDisplayMode = .standard
 
     private var posterWidth: CGFloat {
         DeviceType.current == .iPhone ? 120 : (DeviceType.current == .iPad ? 180 : 250)
@@ -430,33 +451,87 @@ struct MediaPoster: View {
             }
             .cornerRadius(8)
             .frame(width: posterWidth, height: posterHeight)
-            #if !os(iOS)
-            .scaleEffect(isFocused ? 1.05 : 1.0)
-            .shadow(radius: isFocused ? 10 : 0)
-            .animation(.easeInOut(duration: 0.2), value: isFocused)
-            #endif
 
-            // Title
-            Text(item.name ?? "")
-                .font(DeviceType.current == .iPhone ? .caption2 : .caption)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-                .truncationMode(.tail)
-                .frame(width: posterWidth)
-                #if !os(iOS)
-                .opacity(isFocused ? 1.0 : 0.7)
-                #endif
+            if displayMode == .resume {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(resumePrimaryTitle)
+                        .font(DeviceType.current == .iPhone ? .caption2 : .caption)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .truncationMode(.tail)
+
+                    Text(resumeSecondaryTitle)
+                        .font(DeviceType.current == .iPhone ? .caption2 : .caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .truncationMode(.tail)
+                }
+                .frame(width: posterWidth, alignment: .leading)
+            } else {
+                // Title
+                Text(item.name ?? "")
+                    .font(DeviceType.current == .iPhone ? .caption2 : .caption)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .truncationMode(.tail)
+                    .frame(width: posterWidth)
+            }
         }
-        #if !os(iOS)
-        .focusable()
-        .focused($isFocused)
-        #endif
+        .contentShape(Rectangle())
+    }
+
+    private var resumePrimaryTitle: String {
+        if let seriesName = item.seriesName, !seriesName.isEmpty {
+            return seriesName
+        }
+        return item.name ?? ""
+    }
+
+    private var resumeSecondaryTitle: String {
+        let episodeLabel: String? = {
+            switch (item.parentIndexNumber, item.indexNumber) {
+            case let (.some(season), .some(episode)):
+                return "第\(season)季 第\(episode)集"
+            case let (_, .some(episode)):
+                return "第\(episode)集"
+            default:
+                return nil
+            }
+        }()
+
+        let displayName = item.name ?? ""
+        if let episodeLabel, !displayName.isEmpty {
+            return "\(episodeLabel) · \(displayName)"
+        }
+        if let episodeLabel {
+            return episodeLabel
+        }
+        return displayName
+    }
+}
+
+enum MediaPosterDisplayMode {
+    case standard
+    case resume
+}
+
+enum HomeNavigationDestination: Identifiable, Hashable {
+    case detail(MediaItem)
+    case player(MediaItem)
+
+    var id: String {
+        switch self {
+        case .detail(let item):
+            return "detail-\(item.id)"
+        case .player(let item):
+            return "player-\(item.id)"
+        }
     }
 }
 
 enum HomeMediaSection: String, Identifiable, CaseIterable {
     case resume
-    case recent
     case movies
     case tvShows
 
@@ -466,8 +541,6 @@ enum HomeMediaSection: String, Identifiable, CaseIterable {
         switch self {
         case .resume:
             return "继续观看"
-        case .recent:
-            return "最近添加"
         case .movies:
             return "电影"
         case .tvShows:

@@ -15,7 +15,7 @@ struct MoreMediaListView: View {
     let accessToken: String
 
     @StateObject private var viewModel = MoreMediaListViewModel()
-    @State private var selectedItem: MediaItem?
+    @State private var selectedDestination: MoreMediaNavigationDestination?
 
     private var horizontalPadding: CGFloat {
         DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 32 : 60)
@@ -34,14 +34,22 @@ struct MoreMediaListView: View {
     var body: some View {
         ScrollView {
             LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
-                ForEach(viewModel.items) { item in
-                    MediaPoster(item: item, serverURL: serverURL)
-                        .onTapGesture {
-                            selectedItem = item
+                ForEach(viewModel.items.indices, id: \.self) { index in
+                    let item = viewModel.items[index]
+                    Button {
+                        if section == .resume {
+                            selectedDestination = .player(item)
+                        } else {
+                            selectedDestination = .detail(item)
                         }
-                        .onAppear {
-                            viewModel.loadMoreIfNeeded(currentItem: item)
-                        }
+                    } label: {
+                        MediaPoster(item: item, serverURL: serverURL)
+                    }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .onAppear {
+                        viewModel.loadMoreIfNeeded(currentItem: item)
+                    }
                 }
 
                 if viewModel.isLoadingMore {
@@ -56,12 +64,12 @@ struct MoreMediaListView: View {
         }
         .navigationTitle(section.title)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: Binding(
-            get: { selectedItem != nil },
-            set: { if !$0 { selectedItem = nil } }
-        )) {
-            if let item = selectedItem {
+        .navigationDestination(item: $selectedDestination) { destination in
+            switch destination {
+            case .detail(let item):
                 MediaDetailView(mediaItem: item)
+            case .player(let item):
+                PlayerView(mediaItem: item)
             }
         }
         .toolbar {
@@ -221,8 +229,6 @@ final class MoreMediaListViewModel: ObservableObject {
         switch section {
         case .resume:
             filters["Filters"] = "IsResumable"
-        case .recent:
-            break
         case .movies:
             filters["IncludeItemTypes"] = "Movie"
         case .tvShows:
@@ -243,6 +249,19 @@ enum MoreMediaSortOption: CaseIterable {
             return "按添加日期"
         case .mediaTime:
             return "按媒体时间"
+        }
+    }
+}
+enum MoreMediaNavigationDestination: Identifiable, Hashable {
+    case detail(MediaItem)
+    case player(MediaItem)
+
+    var id: String {
+        switch self {
+        case .detail(let item):
+            return "detail-\(item.id)"
+        case .player(let item):
+            return "player-\(item.id)"
         }
     }
 }

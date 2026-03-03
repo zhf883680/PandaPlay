@@ -19,6 +19,15 @@ import TVUIKit
 // MARK: - UIViewRepresentable for VLCMediaPlayer (iOS)
 struct VLCPlayerView: UIViewRepresentable {
     let player: VLCMediaPlayer?
+    let onReady: () -> Void
+
+    class Coordinator {
+        weak var boundPlayer: VLCMediaPlayer?
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
@@ -26,14 +35,36 @@ struct VLCPlayerView: UIViewRepresentable {
 
         if let player = player {
             player.drawable = view
+            context.coordinator.boundPlayer = player
+        }
+
+        DispatchQueue.main.async {
+            onReady()
         }
 
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        if let player = player, player.drawable == nil {
-            player.drawable = uiView
+        if let player = player {
+            let drawable = player.drawable as AnyObject?
+            if context.coordinator.boundPlayer !== player || drawable !== uiView {
+                player.drawable = uiView
+                context.coordinator.boundPlayer = player
+            }
+        } else if let oldPlayer = context.coordinator.boundPlayer {
+            oldPlayer.drawable = nil
+            context.coordinator.boundPlayer = nil
+        }
+    }
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+        if let player = coordinator.boundPlayer {
+            let drawable = player.drawable as AnyObject?
+            if drawable === uiView {
+                player.drawable = nil
+            }
+            coordinator.boundPlayer = nil
         }
     }
 }
@@ -41,6 +72,15 @@ struct VLCPlayerView: UIViewRepresentable {
 // MARK: - UIViewRepresentable for VLCMediaPlayer (tvOS)
 struct VLCPlayerView: UIViewRepresentable {
     let player: VLCMediaPlayer?
+    let onReady: () -> Void
+
+    class Coordinator {
+        weak var boundPlayer: VLCMediaPlayer?
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
@@ -48,14 +88,36 @@ struct VLCPlayerView: UIViewRepresentable {
 
         if let player = player {
             player.drawable = view
+            context.coordinator.boundPlayer = player
+        }
+
+        DispatchQueue.main.async {
+            onReady()
         }
 
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        if let player = player, player.drawable == nil {
-            player.drawable = uiView
+        if let player = player {
+            let drawable = player.drawable as AnyObject?
+            if context.coordinator.boundPlayer !== player || drawable !== uiView {
+                player.drawable = uiView
+                context.coordinator.boundPlayer = player
+            }
+        } else if let oldPlayer = context.coordinator.boundPlayer {
+            oldPlayer.drawable = nil
+            context.coordinator.boundPlayer = nil
+        }
+    }
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+        if let player = coordinator.boundPlayer {
+            let drawable = player.drawable as AnyObject?
+            if drawable === uiView {
+                player.drawable = nil
+            }
+            coordinator.boundPlayer = nil
         }
     }
 }
@@ -71,6 +133,8 @@ struct PlayerView: View {
     @State private var showControls = true
     @State private var controlsTimer: Task<Void, Never>?
     @State private var showSubtitleMenu = false
+    @State private var playerViewReady = false
+    @State private var pendingAutoPlay = false
 
     #if os(tvOS)
     @FocusState private var focusedButton: FocusedButton?
@@ -89,7 +153,10 @@ struct PlayerView: View {
 
             if let player = viewModel.mediaPlayer {
                 // Video player view
-                VLCPlayerView(player: player)
+                VLCPlayerView(player: player) {
+                    playerViewReady = true
+                    startPlaybackIfReady()
+                }
                     .ignoresSafeArea()
                     #if os(tvOS)
                     .onPlayPauseCommand {
@@ -175,15 +242,14 @@ struct PlayerView: View {
                     userId: userId,
                     accessToken: accessToken
                 )
-                // Auto play after loading
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    viewModel.play()
-                    #if os(tvOS)
-                    // Set initial focus on play/pause button for tvOS
-                    focusedButton = .playPause
-                    #endif
-                }
+                pendingAutoPlay = true
+                startPlaybackIfReady()
             }
+        }
+        .onDisappear {
+            pendingAutoPlay = false
+            playerViewReady = false
+            viewModel.cleanup()
         }
         .navigationBarHidden(true)
     }
@@ -399,6 +465,16 @@ struct PlayerView: View {
                 }
             }
         }
+    }
+
+    private func startPlaybackIfReady() {
+        guard pendingAutoPlay, playerViewReady else { return }
+        pendingAutoPlay = false
+        viewModel.restoreProgressIfAvailable()
+        viewModel.play()
+        #if os(tvOS)
+        focusedButton = .playPause
+        #endif
     }
 }
 

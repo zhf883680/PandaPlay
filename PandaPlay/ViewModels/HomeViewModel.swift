@@ -15,14 +15,13 @@ class HomeViewModel: ObservableObject {
     @Published var hasError: Bool = false
     @Published var errorMessage: String?
     @Published var resumeItems: [MediaItem] = []
-    @Published var recentMovies: [MediaItem] = []
     @Published var movies: [MediaItem] = []
     @Published var tvShows: [MediaItem] = []
 
     private var embyClient: EmbyClient?
 
     var hasContent: Bool {
-        !resumeItems.isEmpty || !recentMovies.isEmpty || !movies.isEmpty || !tvShows.isEmpty
+        !resumeItems.isEmpty || !movies.isEmpty || !tvShows.isEmpty
     }
 
     func loadContent(serverURL: String, userId: String, accessToken: String) async {
@@ -39,8 +38,7 @@ class HomeViewModel: ObservableObject {
 
         embyClient = EmbyClient(serverURL: serverURL, accessToken: accessToken)
 
-        async let resume = embyClient?.getResumeItems(userId: userId, limit: 20)
-        async let recent = embyClient?.getRecentItems(userId: userId, limit: 20)
+        async let resume = embyClient?.getResumeItems(userId: userId, limit: 12)
         async let movies = embyClient?.getItems(userId: userId, filters: [
             "IncludeItemTypes": "Movie",
             "Recursive": "true",
@@ -55,12 +53,11 @@ class HomeViewModel: ObservableObject {
         ])
 
         do {
-            let results = try await [resume, recent, movies, tvShows] as [ [MediaItem]? ]
+            let results = try await [resume, movies, tvShows] as [[MediaItem]?]
 
             self.resumeItems = results[0] ?? []
-            self.recentMovies = results[1] ?? []
-            self.movies = results[2] ?? []
-            self.tvShows = results[3] ?? []
+            self.movies = results[1] ?? []
+            self.tvShows = results[2] ?? []
 
             isLoading = false
             hasError = false

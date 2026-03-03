@@ -40,16 +40,10 @@ struct ContentView: View {
         }
 
         // Try to auto-login with saved credentials
-        let success = await authManager.tryAutoLogin(
+        _ = await authManager.tryAutoLogin(
             serverURL: server.url,
             serverId: server.id
         )
-
-        if success {
-            print("✅ Auto-login successful for server: \(server.name)")
-        } else {
-            print("⚠️ Auto-login failed, need to login")
-        }
     }
 }
 

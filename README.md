@@ -1,194 +1,51 @@
-# PandaPlay - Emby/Jellyfin Player
+# PandaPlay
 
-> **⚠️ IMPORTANT: Early Development Stage**
->
-> This project is in **early alpha** stage with **many bugs and limitations**. Basic playback functionality works, but:
->
-> - **Expect crashes and instability**
-> - **Many features are incomplete or broken**
-> - **Performance needs significant optimization**
-> - **UI/UX is still being refined**
->
-> We are actively working on improvements. Use at your own risk and please report issues!
+PandaPlay is a SwiftUI client for Emby/Jellyfin on Apple platforms.
 
-An advanced media player for Emby/Jellyfin servers with multi-platform support.
+## Implemented Features
 
-[中文文档](README_CN.md)
+### Home
+- Continue Watching section from server resume data.
+- Resume cards use two-line text:
+  - line 1: series name (or item name)
+  - line 2: episode info + title when available
+- Home rows show up to 10 preview items.
+- `More` entry for non-resume sections.
+- Removed `Recently Added` section from home.
 
-## Features
+### More List
+- Dedicated list page for sections with paging.
+- Infinite load when scrolling near the bottom.
+- Sort options:
+  - by date added
+  - by media duration/time
 
-### ✅ Completed Features
+### Search
+- Added global search entry on home toolbar.
+- Added `SearchView` with server-side keyword search.
+- Supports searching Movie / Series / Episode.
+- Episode results open player directly.
 
-#### Multi-Platform Support
-- iOS (iPhone & iPad) with native touch interface
-- tvOS with Siri Remote support
-- Responsive design optimized for each device type
+### Player and Playback Reporting
+- Continue Watching item tap opens player directly.
+- Fixed resume row item tap hit/mapping behavior.
+- Improved player drawable binding lifecycle to reduce SwiftUI/VLC threading issues.
+- Playback check-in/reporting improvements:
+  - start/progress/stopped reporting path cleanup
+  - retry path when initial start report fails
+  - aligned client authorization header usage
 
-#### Server Connection & Management
-- Emby/Jellyfin server authentication
-- **Multiple server management** with secure storage (Keychain)
-- Easy server switching
-- Auto-connect to last used server
+## Main Updated Files
 
-#### Media Library
-- Browse movies and TV shows
-- View recently added and resume items
-- Season and episode navigation
-- **Display media data** (posters, backdrops, metadata)
+- `PandaPlay/Views/Media/HomeView.swift`
+- `PandaPlay/Views/Media/MoreMediaListView.swift`
+- `PandaPlay/Views/Media/SearchView.swift`
+- `PandaPlay/Views/Player/PlayerView.swift`
+- `PandaPlay/ViewModels/HomeViewModel.swift`
+- `PandaPlay/ViewModels/PlayerViewModel.swift`
+- `PandaPlay/Services/EmbyClient.swift`
+- `PandaPlay/App/ContentView.swift`
 
-#### Video Playback
-- **Wide format support** via MobileVLCKit (MKV, MP4, AVI, etc.)
-- Direct streaming (no server transcoding)
-- Hardware-accelerated decoding
-- **Subtitle track selection** with on/off toggle
-- Multiple audio track support
-- **Comprehensive player controls** (play/pause, seek, progress bar)
-- Auto-hide controls after 4 seconds of inactivity
+## Build
+- Build in Xcode or run project build from your current workspace scheme.
 
-#### User Experience
-- Native iOS/tvOS interface
-- Focus-based navigation on tvOS
-- Smooth image loading with blur hash placeholders
-- Secure password input with SecureField
-
-### 🚧 Planned Features
-
-#### Data & Performance
-- **Data optimization** (caching, pagination, lazy loading)
-- **Cache calculation** and management
-- Network request optimization
-
-#### User Interface
-- **Page optimization** and refinement
-- Enhanced navigation patterns
-- More responsive layouts
-
-#### Playback Features
-- **Playback history** tracking
-- Continue watching across devices
-- **Playback settings** (speed, skip intervals)
-- **Subtitle settings** (size, color, position)
-- **Danmu (bullet comments)** support
-
-#### Library Management
-- **Search functionality** (media, episodes)
-- **Favorites/collections** feature
-- Watchlist management
-- Custom playlists
-
-#### Settings & Sync
-- **Sync settings** across devices
-- Cloud synchronization
-- Backup and restore settings
-
-#### Advanced Features
-- Offline download support
-- Background playback
-- Picture-in-picture mode
-- Custom themes
-
-## Requirements
-
-- macOS 14.0+
-- Xcode 15.0+
-- iOS 15.0+ / tvOS 15.0+
-- CocoaPods
-
-## Installation
-
-### Building from Source
-
-1. Clone the repository
-2. Install CocoaPods dependencies:
-   ```bash
-   cd PandaPlay
-   pod install
-   ```
-3. Open `PandaPlay.xcworkspace` in Xcode (use .xcworkspace, not .xcodeproj)
-4. Select your development team in project settings
-5. **Generate app icons** (see [App Icon Design](#app-icon-design) below)
-6. Build and run on iOS Simulator, tvOS Simulator, or physical device
-
-### App Icon Design
-
-The project includes a custom panda-themed app icon design. See `ICON_DESIGN.md` for complete guidelines on generating icons for different platforms.
-
-**Quick Start:**
-- Icon source: `AppIcon.svg`
-- Use [AppIconGenerator](https://appicon.co) or ImageMagick to generate platform-specific sizes
-- Refer to `ICON_DESIGN.md` for detailed instructions
-
-### Dependencies
-
-The project uses CocoaPods for dependency management:
-
-- **MobileVLCKit** (~> 3.3.0) - Media player with VLC's FFmpeg-based decoding engine
-  - Supports MKV, MP4, AVI, MOV, and many other formats
-  - Hardware-accelerated decoding on iOS/tvOS
-  - Built-in subtitle and audio track support
-
-These are automatically resolved when running `pod install`.
-
-## Configuration
-
-On first launch, the app will guide you through:
-
-1. **Server Setup**: Enter your Emby/Jellyfin server URL
-2. **Authentication**: Login with your username and password
-3. **Media Access**: Browse your media library
-
-## Project Structure
-
-```
-PandaPlay/
-├── App/                        # App entry point
-│   ├── PandaPlayApp.swift
-│   └── ContentView.swift
-├── Views/                      # UI views
-│   ├── Onboarding/            # Setup & login screens
-│   ├── Media/                 # Media browsing (home, detail)
-│   ├── Player/                # Video player with MobileVLCKit
-│   ├── Settings/              # Settings management
-│   └── Components/            # Reusable UI components
-├── ViewModels/                 # View models
-│   ├── ServerManager.swift    # Server configuration
-│   ├── AuthManager.swift      # Authentication state
-│   ├── HomeViewModel.swift    # Media library logic
-│   └── PlayerViewModel.swift  # Player logic with subtitle/track management
-├── Models/                     # Data models
-│   └── AppError.swift         # Error types
-├── Services/                   # Service layer
-│   ├── EmbyClient.swift       # Emby/Jellyfin API client
-│   ├── ImageLoader.swift      # Async image loading
-│   ├── KeychainManager.swift  # Secure storage
-│   ├── PlaybackProgressManager.swift
-│   └── UserDefaultsManager.swift
-├── Utils/                      # Utility functions
-│   └── DeviceType.swift       # Device detection and responsive layout helpers
-└── Assets.xcassets            # Images and resources
-```
-
-## Platform-Specific Features
-
-### iOS (iPhone/iPad)
-- Touch-based controls
-- Swipe gestures for navigation
-- Compact and regular size class support
-- On-screen player controls with auto-hide
-
-### tvOS
-- Siri Remote integration
-- Focus-based navigation
-- Simplified control scheme optimized for remote
-
-## Known Issues
-
-- Episode overview not displaying when selecting an episode (needs getItem API call)
-
-## License
-
-This project uses MobileVLCKit which is licensed under LGPL v2.1 (or later). Please ensure compliance with MobileVLCKit's license terms if you fork or modify this project.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues and pull requests.

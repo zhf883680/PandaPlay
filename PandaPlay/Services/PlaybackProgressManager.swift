@@ -84,6 +84,30 @@ class PlaybackProgressManager {
         }
     }
 
+    // MARK: - Recent Progress
+
+    func loadRecentProgress(limit: Int = 20) -> [PlaybackProgress] {
+        let allProgress = loadAllProgress()
+
+        return allProgress.values
+            .map {
+                PlaybackProgress(
+                    itemId: $0.itemId,
+                    positionTicks: $0.positionTicks,
+                    durationTicks: $0.durationTicks,
+                    lastUpdated: Date(timeIntervalSince1970: $0.lastUpdated)
+                )
+            }
+            .filter { progress in
+                guard progress.durationTicks > 0 else { return false }
+                let percentage = progress.progressPercentage
+                return percentage >= 0.01 && percentage < 0.95
+            }
+            .sorted { $0.lastUpdated > $1.lastUpdated }
+            .prefix(limit)
+            .map { $0 }
+    }
+
     // MARK: - Helpers
 
     private func loadAllProgress() -> [String: PlaybackProgressEntry] {

@@ -47,6 +47,13 @@ class PlayerViewModel: NSObject, ObservableObject {
     private var client: EmbyClient?
     private var userId: String?
     private var progressTimer: Timer?
+    private var currentItemId: String?
+    private var lastSavedPositionMs: Int = 0
+    private var lastReportedProgressMs: Int = 0
+    private var hasReportedPlaybackStart: Bool = false
+    private var hasReportedPlaybackStopped: Bool = false
+    private var playSessionId: String = UUID().uuidString
+    private var currentSessionId: String?
 
     func loadPlayer(for mediaItem: MediaItem, serverURL: String, userId: String, accessToken: String) async {
         isLoading = true
@@ -54,15 +61,21 @@ class PlayerViewModel: NSObject, ObservableObject {
 
         client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
         self.userId = userId
+        self.currentItemId = mediaItem.id
+        self.lastSavedPositionMs = 0
+        self.lastReportedProgressMs = 0
+        self.hasReportedPlaybackStart = false
+        self.hasReportedPlaybackStopped = false
+        self.playSessionId = UUID().uuidString
+        self.currentSessionId = nil
 
         // Get stream URL
-        guard let streamURL = client?.getStreamURL(itemId: mediaItem.id, userId: userId, isStatic: false) else {
+        // Prefer direct stream for compatibility with current server setup.
+        guard let streamURL = client?.getStreamURL(itemId: mediaItem.id, userId: userId, isStatic: true) else {
             errorMessage = "无法获取播放地址"
             isLoading = false
             return
         }
-
-        print("🎬 [PlayerViewModel] Stream URL: \(streamURL.absoluteString)")
 
         // Create VLC Media
         let media = VLCMedia(url: streamURL)
@@ -101,19 +114,15 @@ class PlayerViewModel: NSObject, ObservableObject {
         // Get subtitle tracks from player
         let subtitleIndexCount = player.numberOfSubtitlesTracks
 
-        print("🎬 [PlayerViewModel] numberOfSubtitlesTracks: \(subtitleIndexCount)")
-
         if subtitleIndexCount > 0 {
             for i in 0..<subtitleIndexCount {
                 let index = Int(i)
                 let track = SubtitleTrack(id: index, name: "字幕 \(index + 1)", language: nil)
                 tracks.append(track)
-                print("🎬 [PlayerViewModel] Found subtitle track: \(track.displayName)")
             }
         }
 
         subtitleTracks = tracks
-        print("🎬 [PlayerViewModel] Loaded \(tracks.count) subtitle tracks")
     }
 
     func setSubtitleTrack(index: Int) {
@@ -123,25 +132,18 @@ class PlayerViewModel: NSObject, ObservableObject {
             // Disable subtitles
             player.currentVideoSubTitleIndex = -1
             currentSubtitleIndex = -1
-            print("🎬 [PlayerViewModel] Subtitles disabled")
         } else {
             // Set subtitle track index (needs to be Int32)
             player.currentVideoSubTitleIndex = Int32(index)
             currentSubtitleIndex = index
 
-            // Find track name for logging
-            if let track = subtitleTracks.first(where: { $0.id == index }) {
-                print("🎬 [PlayerViewModel] Subtitle changed to: \(track.displayName)")
-            } else {
-                print("🎬 [PlayerViewModel] Subtitle changed to index: \(index)")
-            }
         }
     }
 
     private func startProgressTimer() {
         progressTimer?.invalidate()
         progressTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
-            Task { @MainActor in
+            DispatchQueue.main.async {
                 self?.updateProgress()
             }
         }
@@ -155,6 +157,9 @@ class PlayerViewModel: NSObject, ObservableObject {
             duration = Int(mediaDuration)
         }
         isPlaying = player.isPlaying
+
+        persistProgressIfNeeded()
+        reportProgressIfNeeded()
     }
 
     func play() {
@@ -175,22 +180,167 @@ class PlayerViewModel: NSObject, ObservableObject {
     }
 
     func cleanup() {
+        persistProgressForExit()
+        reportStoppedIfNeeded()
         stop()
         progressTimer?.invalidate()
         progressTimer = nil
         mediaPlayer = nil
     }
 
-    func reportPlaybackStart(itemId: String, userId: String) async {
-        print("🎬 [PlayerViewModel] Report playback start for item: \(itemId)")
+    func restoreProgressIfAvailable() {
+        guard let itemId = currentItemId else { return }
+        guard let progress = PlaybackProgressManager.shared.loadProgress(itemId: itemId) else { return }
+        guard progress.durationTicks > 0 else { return }
+        guard progress.progressPercentage >= 0.01, progress.progressPercentage < 0.95 else { return }
+
+        let resumeMs = Int(progress.positionTicks / 10_000)
+        if resumeMs > 0 {
+            seek(to: resumeMs)
+        }
     }
 
-    func reportPlaybackProgress(itemId: String, positionTicks: Int64, userId: String) async {
-        print("🎬 [PlayerViewModel] Report playback progress: \(positionTicks) ticks")
+    func reportPlaybackStart(itemId: String) async {
+        guard !hasReportedPlaybackStart else { return }
+        guard let client else { return }
+        hasReportedPlaybackStart = true
+
+        if currentSessionId == nil {
+            currentSessionId = await client.getCurrentSessionId(userId: userId)
+        }
+
+        let positionTicks = currentTime > 0 ? Int64(currentTime) * 10_000 : nil
+        let runTimeTicks = duration > 0 ? Int64(duration) * 10_000 : nil
+
+        do {
+            try await client.reportPlaybackStarted(
+                itemId: itemId,
+                positionTicks: positionTicks,
+                runTimeTicks: runTimeTicks,
+                playSessionId: playSessionId,
+                sessionId: currentSessionId
+            )
+        } catch {
+            hasReportedPlaybackStart = false
+            #if DEBUG
+            print("❌ [PlayerViewModel] reportPlaybackStart failed: \(error.localizedDescription)")
+            #endif
+        }
     }
 
-    func reportPlaybackStopped(itemId: String, positionTicks: Int64, userId: String) async {
-        print("🎬 [PlayerViewModel] Report playback stopped at: \(positionTicks) ticks")
+    func reportPlaybackProgress(itemId: String, positionTicks: Int64) async {
+        guard let client else { return }
+        let runTimeTicks = duration > 0 ? Int64(duration) * 10_000 : nil
+
+        do {
+            try await client.reportPlaybackProgress(
+                itemId: itemId,
+                positionTicks: positionTicks,
+                runTimeTicks: runTimeTicks,
+                isPaused: !isPlaying,
+                playSessionId: playSessionId,
+                sessionId: currentSessionId
+            )
+        } catch {
+            #if DEBUG
+            print("❌ [PlayerViewModel] reportPlaybackProgress failed: \(error.localizedDescription)")
+            #endif
+        }
+    }
+
+    func reportPlaybackStopped(itemId: String, positionTicks: Int64) async {
+        guard let client else { return }
+        guard !hasReportedPlaybackStopped else { return }
+        hasReportedPlaybackStopped = true
+
+        do {
+            try await client.reportPlaybackStopped(
+                itemId: itemId,
+                positionTicks: positionTicks,
+                playSessionId: playSessionId,
+                sessionId: currentSessionId
+            )
+        } catch {
+            hasReportedPlaybackStopped = false
+            #if DEBUG
+            print("❌ [PlayerViewModel] reportPlaybackStopped failed: \(error.localizedDescription)")
+            #endif
+        }
+    }
+
+    private func persistProgressIfNeeded() {
+        guard let itemId = currentItemId else { return }
+        guard currentTime > 0, duration > 0 else { return }
+
+        // Reduce write frequency to avoid excessive UserDefaults updates.
+        if abs(currentTime - lastSavedPositionMs) < 5_000 {
+            return
+        }
+
+        let positionTicks = Int64(currentTime) * 10_000
+        let durationTicks = Int64(duration) * 10_000
+        let progressPercentage = Double(currentTime) / Double(duration)
+
+        if progressPercentage >= 0.95 {
+            PlaybackProgressManager.shared.clearProgress(itemId: itemId)
+        } else {
+            PlaybackProgressManager.shared.saveProgress(
+                itemId: itemId,
+                positionTicks: positionTicks,
+                durationTicks: durationTicks
+            )
+        }
+
+        lastSavedPositionMs = currentTime
+    }
+
+    private func persistProgressForExit() {
+        guard let itemId = currentItemId else { return }
+        guard currentTime > 0, duration > 0 else { return }
+
+        let positionTicks = Int64(currentTime) * 10_000
+        let durationTicks = Int64(duration) * 10_000
+        let progressPercentage = Double(currentTime) / Double(duration)
+
+        if progressPercentage >= 0.95 {
+            PlaybackProgressManager.shared.clearProgress(itemId: itemId)
+        } else {
+            PlaybackProgressManager.shared.saveProgress(
+                itemId: itemId,
+                positionTicks: positionTicks,
+                durationTicks: durationTicks
+            )
+        }
+    }
+
+    private func reportProgressIfNeeded() {
+        guard currentTime > 0 else { return }
+        guard let itemId = currentItemId else { return }
+
+        if !hasReportedPlaybackStart {
+            Task {
+                await reportPlaybackStart(itemId: itemId)
+            }
+            return
+        }
+
+        guard abs(currentTime - lastReportedProgressMs) >= 10_000 else { return }
+
+        let positionTicks = Int64(currentTime) * 10_000
+        lastReportedProgressMs = currentTime
+
+        Task {
+            await reportPlaybackProgress(itemId: itemId, positionTicks: positionTicks)
+        }
+    }
+
+    private func reportStoppedIfNeeded() {
+        guard let itemId = currentItemId else { return }
+        let positionTicks = Int64(max(currentTime, 0)) * 10_000
+
+        Task {
+            await reportPlaybackStopped(itemId: itemId, positionTicks: positionTicks)
+        }
     }
 }
 
@@ -201,21 +351,28 @@ extension PlayerViewModel: VLCMediaPlayerDelegate {
 
         switch player.state {
         case .playing:
-            print("🎬 [PlayerViewModel] Playing")
             isPlaying = true
+            if let itemId = currentItemId {
+                Task {
+                    await reportPlaybackStart(itemId: itemId)
+                }
+            }
         case .paused:
-            print("🎬 [PlayerViewModel] Paused")
             isPlaying = false
+            reportProgressIfNeeded()
         case .stopped:
-            print("🎬 [PlayerViewModel] Stopped")
             isPlaying = false
+            reportStoppedIfNeeded()
         case .ended:
-            print("🎬 [PlayerViewModel] Ended")
             isPlaying = false
+            if let itemId = currentItemId {
+                PlaybackProgressManager.shared.clearProgress(itemId: itemId)
+            }
+            reportStoppedIfNeeded()
         case .error:
-            print("🎬 [PlayerViewModel] Error")
             errorMessage = "播放出错"
             isPlaying = false
+            reportStoppedIfNeeded()
         default:
             break
         }

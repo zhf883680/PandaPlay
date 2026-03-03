@@ -11,6 +11,10 @@ class EmbyClient {
     private let baseURL: String
     private let session: URLSession
     private var accessToken: String?
+    private let clientName = "PandaPlay"
+    private let clientVersion = "1.0.0"
+    private let deviceName = "PandaPlay"
+    private let deviceId: String
 
     init(serverURL: String, accessToken: String? = nil) {
         // Normalize URL
@@ -22,6 +26,14 @@ class EmbyClient {
 
         // Store provided access token
         self.accessToken = accessToken
+        let deviceIdKey = "emby_device_id"
+        if let stored = UserDefaults.standard.string(forKey: deviceIdKey), !stored.isEmpty {
+            self.deviceId = stored
+        } else {
+            let newId = UUID().uuidString
+            self.deviceId = newId
+            UserDefaults.standard.set(newId, forKey: deviceIdKey)
+        }
 
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
@@ -43,7 +55,7 @@ class EmbyClient {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         // Add Authorization header
-        let authHeader = "Emby Client=\"PandaPlay TV\", Device=\"Apple TV\", DeviceId=\"\(UUID().uuidString)\", Version=\"1.0.0\""
+        let authHeader = authorizationHeaderValue()
         request.setValue(authHeader, forHTTPHeaderField: "X-Emby-Authorization")
 
         let body: [String: Any] = [
@@ -90,7 +102,6 @@ class EmbyClient {
         guard let url = components.url else {
             throw EmbyError.invalidURL
         }
-
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let token = accessToken {
@@ -116,12 +127,114 @@ class EmbyClient {
         ])
     }
 
-    func getResumeItems(userId: String, limit: Int = 20) async throws -> [MediaItem] {
+    func searchItems(userId: String, query: String, limit: Int = 50) async throws -> [MediaItem] {
+        let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedQuery.isEmpty else { return [] }
+
         return try await getItems(userId: userId, filters: [
+            "Recursive": "true",
+            "SearchTerm": normalizedQuery,
+            "IncludeItemTypes": "Movie,Series,Episode",
+            "Limit": String(limit),
+            "Fields": "Overview,Genres,CommunityRating,ProductionYear,RunTimeTicks,UserData",
+            "SortBy": "SortName",
+            "SortOrder": "Ascending"
+        ])
+    }
+
+    func getResumeItems(userId: String, limit: Int = 20) async throws -> [MediaItem] {
+        let endpoint = "emby/Users/\(userId)/Items/Resume"
+        guard let baseComponents = URLComponents(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+
+        let strategies: [[URLQueryItem]] = [
+            // Strategy 1: mimic Web query as close as possible.
+            [
+                URLQueryItem(name: "Recursive", value: "true"),
+                URLQueryItem(name: "MediaTypes", value: "Video"),
+                URLQueryItem(name: "ImageTypeLimit", value: "1"),
+                URLQueryItem(name: "EnableImageTypes", value: "Primary,Backdrop,Thumb"),
+                URLQueryItem(name: "Limit", value: String(limit)),
+                URLQueryItem(name: "Fields", value: "BasicSyncInfo,CanDelete,CanDownload,PrimaryImageAspectRatio,ProgramPrimaryImageAspectRatio,ProductionYear,Status,EndDate")
+            ],
+            // Strategy 2: keep Resume endpoint, remove MediaTypes.
+            [
+                URLQueryItem(name: "Recursive", value: "true"),
+                URLQueryItem(name: "ImageTypeLimit", value: "1"),
+                URLQueryItem(name: "EnableImageTypes", value: "Primary,Backdrop,Thumb"),
+                URLQueryItem(name: "Limit", value: String(limit)),
+                URLQueryItem(name: "Fields", value: "BasicSyncInfo,CanDelete,CanDownload,PrimaryImageAspectRatio,ProgramPrimaryImageAspectRatio,ProductionYear,Status,EndDate")
+            ],
+            // Strategy 3: minimal Resume query.
+            [
+                URLQueryItem(name: "Limit", value: String(limit)),
+                URLQueryItem(name: "Recursive", value: "true")
+            ]
+        ]
+
+        for (_, queryItems) in strategies.enumerated() {
+            var components = baseComponents
+            var requestQueryItems = queryItems
+            requestQueryItems.append(contentsOf: [
+                URLQueryItem(name: "X-Emby-Client", value: clientName),
+                URLQueryItem(name: "X-Emby-Device-Name", value: deviceName),
+                URLQueryItem(name: "X-Emby-Device-Id", value: deviceId),
+                URLQueryItem(name: "X-Emby-Client-Version", value: clientVersion),
+                URLQueryItem(name: "X-Emby-Language", value: "zh-cn")
+            ])
+            if let token = accessToken, !token.isEmpty {
+                requestQueryItems.append(URLQueryItem(name: "X-Emby-Token", value: token))
+            }
+            components.queryItems = requestQueryItems
+
+            guard let url = components.url else { continue }
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            if let token = accessToken {
+                request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+            }
+
+            do {
+                let (data, response) = try await session.data(for: request)
+                if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+                    continue
+                }
+
+                let decoded = try JSONDecoder().decode(MediaItemsResponse.self, from: data)
+                let resumeItems = decoded.items ?? []
+                if !resumeItems.isEmpty {
+                    return resumeItems
+                }
+            } catch {
+                continue
+            }
+        }
+
+        // Fallback for servers that do not fully support /Items/Resume.
+        if let resumableItems = try? await getItems(userId: userId, filters: [
             "Filters": "IsResumable",
             "Limit": String(limit),
-            "Recursive": "true"
+            "Recursive": "true",
+            "IncludeItemTypes": "Movie,Episode",
+            "Fields": "Overview,Genres,CommunityRating,ProductionYear,RunTimeTicks,UserData",
+            "SortBy": "DatePlayed",
+            "SortOrder": "Descending"
+        ]), !resumableItems.isEmpty {
+            return resumableItems
+        }
+
+        // Second fallback to maximize compatibility.
+        let fallback2 = try await getItems(userId: userId, filters: [
+            "IsResumable": "true",
+            "Limit": String(limit),
+            "Recursive": "true",
+            "IncludeItemTypes": "Movie,Episode",
+            "Fields": "Overview,Genres,CommunityRating,ProductionYear,RunTimeTicks,UserData",
+            "SortBy": "DatePlayed",
+            "SortOrder": "Descending"
         ])
+        return fallback2
     }
 
     // MARK: - Item Details
@@ -148,11 +261,8 @@ class EmbyClient {
         // Jellyfin supports both /Shows/ and /emby/Shows/
         let endpoint = "emby/Shows/\(seriesId)/Seasons?userId=\(userId)"
         guard let url = URL(string: baseURL + endpoint) else {
-            print("❌ [EmbyClient] Invalid URL: \(baseURL)\(endpoint)")
             throw EmbyError.invalidURL
         }
-
-        print("🔍 [EmbyClient] Fetching seasons from: \(url.absoluteString)")
 
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -160,19 +270,9 @@ class EmbyClient {
             request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
         }
 
-        let (data, response) = try await session.data(for: request)
-
-        if let httpResponse = response as? HTTPURLResponse {
-            print("📡 [EmbyClient] Response status: \(httpResponse.statusCode)")
-        }
-
-        // Print response for debugging
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("📄 [EmbyClient] Response data (first 500 chars): \(jsonString.prefix(500))")
-        }
+        let (data, _) = try await session.data(for: request)
 
         let decoded = try JSONDecoder().decode(MediaItemsResponse.self, from: data)
-        print("✅ [EmbyClient] Decoded \(decoded.items?.count ?? 0) seasons")
         return decoded.items ?? []
     }
 
@@ -182,11 +282,8 @@ class EmbyClient {
         // Use the same format as the web UI
         let endpoint = "emby/Users/\(userId)/Items?UserId=\(userId)&ParentId=\(seasonId)&Recursive=true&IsFolder=false"
         guard let url = URL(string: baseURL + endpoint) else {
-            print("❌ [EmbyClient] Invalid URL for episodes: \(baseURL)\(endpoint)")
             throw EmbyError.invalidURL
         }
-
-        print("🔍 [EmbyClient] Fetching episodes from: \(url.absoluteString)")
 
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -194,21 +291,13 @@ class EmbyClient {
             request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
         }
 
-        let (data, response) = try await session.data(for: request)
-
-        if let httpResponse = response as? HTTPURLResponse {
-            print("📡 [EmbyClient] Episodes response status: \(httpResponse.statusCode)")
-        }
+        let (data, _) = try await session.data(for: request)
 
         let decoded = try JSONDecoder().decode(MediaItemsResponse.self, from: data)
         let items = decoded.items ?? []
-        print("✅ [EmbyClient] Decoded \(items.count) episodes")
 
         // Sort by index number
         let sorted = items.sorted { ($0.indexNumber ?? 0) < ($1.indexNumber ?? 0) }
-        if sorted.count != items.count {
-            print("📊 [EmbyClient] Sorted episodes by index number")
-        }
 
         return sorted
     }
@@ -230,6 +319,121 @@ class EmbyClient {
 
         let (data, _) = try await session.data(for: request)
         return try JSONDecoder().decode(PlaybackInfoResponse.self, from: data)
+    }
+
+    // MARK: - Playback Check-ins
+
+    func reportPlaybackStarted(
+        itemId: String,
+        positionTicks: Int64?,
+        runTimeTicks: Int64?,
+        playSessionId: String,
+        sessionId: String?
+    ) async throws {
+        var payload: [String: Any] = [
+            "ItemId": itemId,
+            "CanSeek": true,
+            "IsPaused": false,
+            "PlayMethod": "DirectPlay",
+            "PlaySessionId": playSessionId,
+            "MediaSourceId": itemId
+        ]
+
+        if let positionTicks {
+            payload["PositionTicks"] = positionTicks
+        }
+        if let runTimeTicks {
+            payload["RunTimeTicks"] = runTimeTicks
+        }
+        if let sessionId, !sessionId.isEmpty {
+            payload["SessionId"] = sessionId
+        }
+
+        try await postPlaybackCheckIn(endpoint: "emby/Sessions/Playing", payload: payload)
+    }
+
+    func reportPlaybackProgress(
+        itemId: String,
+        positionTicks: Int64,
+        runTimeTicks: Int64?,
+        isPaused: Bool,
+        playSessionId: String,
+        sessionId: String?
+    ) async throws {
+        var payload: [String: Any] = [
+            "ItemId": itemId,
+            "CanSeek": true,
+            "IsPaused": isPaused,
+            "PlayMethod": "DirectPlay",
+            "PositionTicks": positionTicks,
+            "PlaySessionId": playSessionId,
+            "MediaSourceId": itemId
+        ]
+
+        if let runTimeTicks {
+            payload["RunTimeTicks"] = runTimeTicks
+        }
+        if let sessionId, !sessionId.isEmpty {
+            payload["SessionId"] = sessionId
+        }
+
+        try await postPlaybackCheckIn(endpoint: "emby/Sessions/Playing/Progress", payload: payload)
+    }
+
+    func reportPlaybackStopped(
+        itemId: String,
+        positionTicks: Int64,
+        playSessionId: String,
+        sessionId: String?
+    ) async throws {
+        var payload: [String: Any] = [
+            "ItemId": itemId,
+            "PositionTicks": positionTicks,
+            "PlaySessionId": playSessionId,
+            "MediaSourceId": itemId,
+            "Failed": false
+        ]
+        if let sessionId, !sessionId.isEmpty {
+            payload["SessionId"] = sessionId
+        }
+
+        try await postPlaybackCheckIn(endpoint: "emby/Sessions/Playing/Stopped", payload: payload)
+    }
+
+    func getCurrentSessionId(userId: String?) async -> String? {
+        let endpoint = "emby/Sessions"
+        guard var components = URLComponents(string: baseURL + endpoint) else {
+            return nil
+        }
+
+        components.queryItems = [
+            URLQueryItem(name: "DeviceId", value: deviceId)
+        ]
+
+        guard let url = components.url else {
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(authorizationHeaderValue(), forHTTPHeaderField: "X-Emby-Authorization")
+        if let token = accessToken {
+            request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+        }
+
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                return nil
+            }
+            let sessions = try JSONDecoder().decode([SessionInfo].self, from: data)
+            if let userId, !userId.isEmpty {
+                return sessions.first(where: { $0.userId == userId })?.id ?? sessions.first?.id
+            }
+            return sessions.first?.id
+        } catch {
+            return nil
+        }
     }
 
     // MARK: - Public Info
@@ -276,7 +480,7 @@ class EmbyClient {
         // 根据 Emby API 文档添加认证参数
         // static=true 表示直接流式传输原始文件，不转码（适用于 MKV 等格式）
         components?.queryItems = [
-            URLQueryItem(name: "static", value: "true"),
+            URLQueryItem(name: "static", value: isStatic ? "true" : "false"),
             URLQueryItem(name: "api_key", value: accessToken ?? "")
         ]
         return components?.url
@@ -302,6 +506,59 @@ class EmbyClient {
             URLQueryItem(name: "RequireAvc", value: "true")
         ]
         return components?.url
+    }
+}
+
+private extension EmbyClient {
+    func fetchMediaItems(with request: URLRequest) async throws -> [MediaItem] {
+        let (data, response) = try await session.data(for: request)
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            throw EmbyError.invalidResponse
+        }
+        let decoded = try JSONDecoder().decode(MediaItemsResponse.self, from: data)
+        return decoded.items ?? []
+    }
+
+    func postPlaybackCheckIn(endpoint: String, payload: [String: Any]) async throws {
+        guard var components = URLComponents(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "X-Emby-Client", value: clientName),
+            URLQueryItem(name: "X-Emby-Device-Name", value: deviceName),
+            URLQueryItem(name: "X-Emby-Device-Id", value: deviceId),
+            URLQueryItem(name: "X-Emby-Client-Version", value: clientVersion),
+            URLQueryItem(name: "X-Emby-Language", value: "zh-cn")
+        ]
+        if let token = accessToken, !token.isEmpty {
+            queryItems.append(URLQueryItem(name: "X-Emby-Token", value: token))
+        }
+        components.queryItems = queryItems
+        guard let url = components.url else {
+            throw EmbyError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(authorizationHeaderValue(), forHTTPHeaderField: "X-Emby-Authorization")
+        if let token = accessToken {
+            request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (_, response) = try await session.data(for: request)
+        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            #if DEBUG
+            print("❌ [EmbyClient] Playback check-in failed endpoint=\(endpoint) status=\(httpResponse.statusCode)")
+            #endif
+            throw EmbyError.invalidResponse
+        }
+    }
+
+    func authorizationHeaderValue() -> String {
+        "Emby Client=\"\(clientName)\", Device=\"\(deviceName)\", DeviceId=\"\(deviceId)\", Version=\"\(clientVersion)\""
     }
 }
 
@@ -409,6 +666,16 @@ struct ServerInfo: Codable {
     let productName: String?
     let version: String?
     let serverName: String?
+}
+
+private struct SessionInfo: Codable {
+    let id: String?
+    let userId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "Id"
+        case userId = "UserId"
+    }
 }
 
 struct AuthenticationResponse: Codable {

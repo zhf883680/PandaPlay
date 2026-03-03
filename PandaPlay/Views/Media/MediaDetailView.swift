@@ -404,7 +404,7 @@ struct SeasonEpisodeSelector: View {
             .padding(.horizontal, horizontalPadding)
 
             // Episodes
-            if let season = selectedSeason {
+            if selectedSeason != nil {
                 VStack(alignment: .leading, spacing: DeviceType.current == .iPhone ? 8 : 15) {
                     Text("选集")
                         .font(DeviceType.current == .iPhone ? .subheadline : .title3)
@@ -445,42 +445,34 @@ struct SeasonEpisodeSelector: View {
     }
 
     private func loadSeasons() async {
-        print("🎬 [SeasonEpisodeSelector] loadSeasons called for seriesId: \(seriesId)")
-
         guard let serverURL = serverManager.currentServer?.url else {
-            print("❌ [SeasonEpisodeSelector] No server URL")
             isLoadingSeasons = false
             debugMessage = "没有服务器URL"
             return
         }
 
         guard let userId = authManager.userId else {
-            print("❌ [SeasonEpisodeSelector] No user ID")
             isLoadingSeasons = false
             debugMessage = "没有用户ID"
             return
         }
 
         guard let accessToken = authManager.accessToken else {
-            print("❌ [SeasonEpisodeSelector] No access token")
             isLoadingSeasons = false
             debugMessage = "没有访问令牌"
             return
         }
 
         debugMessage = "正在加载: \(seriesId)"
-        print("🔍 [SeasonEpisodeSelector] Creating EmbyClient with URL: \(serverURL)")
         let client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
         do {
             let seasonList = try await client.getSeasons(seriesId: seriesId, userId: userId)
             await MainActor.run {
                 self.seasons = seasonList
                 self.debugMessage = "加载到 \(seasonList.count) 个季"
-                print("✅ [SeasonEpisodeSelector] Loaded \(seasonList.count) seasons")
                 self.isLoadingSeasons = false
                 if let firstSeason = seasonList.first {
                     self.selectedSeason = firstSeason
-                    print("🎯 [SeasonEpisodeSelector] Selected first season: \(firstSeason.name ?? "unnamed")")
                     Task {
                         await loadSeasonDetails(for: firstSeason.id)
                         await loadEpisodes(for: firstSeason.id)
@@ -490,15 +482,12 @@ struct SeasonEpisodeSelector: View {
         } catch {
             await MainActor.run {
                 self.debugMessage = "加载失败: \(error.localizedDescription)"
-                print("❌ [SeasonEpisodeSelector] Error loading seasons: \(error)")
                 self.isLoadingSeasons = false
             }
         }
     }
 
     private func loadSeasonDetails(for seasonId: String) async {
-        print("🎬 [SeasonEpisodeSelector] loadSeasonDetails for seasonId: \(seasonId)")
-
         guard let serverURL = serverManager.currentServer?.url,
               let userId = authManager.userId,
               let accessToken = authManager.accessToken else {
@@ -514,28 +503,22 @@ struct SeasonEpisodeSelector: View {
                 self.isLoadingSeasonDetails = false
                 // Update overview when season is selected
                 onOverviewChanged(currentOverview)
-                print("✅ [SeasonEpisodeSelector] Loaded season details")
             }
         } catch {
             await MainActor.run {
-                print("❌ [SeasonEpisodeSelector] Error loading season details: \(error)")
                 self.isLoadingSeasonDetails = false
             }
         }
     }
 
     private func loadEpisodes(for seasonId: String) async {
-        print("🎬 [SeasonEpisodeSelector] loadEpisodes called for seasonId: \(seasonId)")
-
         guard let serverURL = serverManager.currentServer?.url,
               let userId = authManager.userId,
               let accessToken = authManager.accessToken else {
-            print("❌ [SeasonEpisodeSelector] Missing credentials for episodes")
             isLoadingEpisodes = false
             return
         }
 
-        print("🔍 [SeasonEpisodeSelector] Loading episodes for season \(seasonId)")
         isLoadingEpisodes = true
         let client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
         do {
@@ -543,11 +526,9 @@ struct SeasonEpisodeSelector: View {
             await MainActor.run {
                 self.episodes = episodeList
                 self.isLoadingEpisodes = false
-                print("✅ [SeasonEpisodeSelector] Loaded \(episodeList.count) episodes")
             }
         } catch {
             await MainActor.run {
-                print("❌ [SeasonEpisodeSelector] Error loading episodes: \(error)")
                 self.isLoadingEpisodes = false
             }
         }
