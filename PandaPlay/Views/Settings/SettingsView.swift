@@ -22,7 +22,7 @@ struct SettingsView: View {
                                 Text(server.name)
                                     .font(.headline)
                                 Text(server.url)
-                                    .font(.caption)
+                                    .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                                     .foregroundColor(.secondary)
                             }
                             Spacer()
@@ -41,7 +41,7 @@ struct SettingsView: View {
                     if let user = authManager.currentUser {
                         HStack {
                             Image(systemName: "person.circle.fill")
-                                .font(.title2)
+                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
                             VStack(alignment: .leading) {
                                 Text(user.name)
                                     .font(.headline)

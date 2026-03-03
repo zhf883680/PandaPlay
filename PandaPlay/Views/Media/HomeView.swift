@@ -15,14 +15,26 @@ struct HomeView: View {
     @State private var selectedItem: MediaItem?
     @State private var showSettings: Bool = false
 
+    private var horizontalPadding: CGFloat {
+        DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 40 : 80)
+    }
+
+    private var verticalPadding: CGFloat {
+        DeviceType.current == .iPhone ? 12 : (DeviceType.current == .iPad ? 24 : 60)
+    }
+
+    private var sectionSpacing: CGFloat {
+        DeviceType.current == .iPhone ? 20 : (DeviceType.current == .iPad ? 32 : 60)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 60) {
+                VStack(spacing: sectionSpacing) {
                     // Header
                     HStack {
                         Text("PandaPlay")
-                            .font(.title2)
+                            .font(DeviceType.current == .iPhone ? .title3 : .title2)
                             .bold()
 
                         Spacer()
@@ -31,22 +43,22 @@ struct HomeView: View {
                             showSettings = true
                         }) {
                             Image(systemName: "gearshape.fill")
-                                .font(.title2)
+                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 80)
-                    .padding(.top, 60)
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.top, verticalPadding)
 
                     // Loading State
                     if viewModel.isLoading {
-                        VStack(spacing: 20) {
+                        VStack(spacing: 12) {
                             ProgressView()
-                                .scaleEffect(2)
+                                .scaleEffect(DeviceType.current == .iPhone ? 1.2 : 2)
                             Text("加载中...")
                                 .foregroundColor(.secondary)
                         }
-                        .frame(height: 400)
+                        .frame(height: DeviceType.current == .iPhone ? 200 : 400)
                     }
                     // Content Rows
                     else {
@@ -99,7 +111,7 @@ struct HomeView: View {
                         }
                     }
 
-                    Spacer(minLength: 100)
+                    Spacer(minLength: DeviceType.current == .iPhone ? 30 : 100)
                 }
             }
             .navigationDestination(isPresented: Binding(
@@ -130,15 +142,23 @@ struct MediaRow: View {
     var serverURL: String
     var onSelect: ((MediaItem) -> Void)?
 
+    private var itemSpacing: CGFloat {
+        DeviceType.current == .iPhone ? 12 : (DeviceType.current == .iPad ? 20 : 40)
+    }
+
+    private var horizontalPadding: CGFloat {
+        DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 30 : 60)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.title2)
+                .font(DeviceType.current == .iPhone ? .headline : .title2)
                 .bold()
-                .padding(.horizontal, 80)
+                .padding(.horizontal, horizontalPadding)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 40) {
+                HStack(spacing: itemSpacing) {
                     ForEach(items) { item in
                         MediaPoster(item: item, serverURL: serverURL)
                             .onTapGesture {
@@ -146,9 +166,11 @@ struct MediaRow: View {
                             }
                     }
                 }
-                .padding(.horizontal, 60)
+                .padding(.horizontal, horizontalPadding - 8)
             }
+            #if !os(iOS)
             .focusSection()
+            #endif
         }
     }
 }
@@ -156,7 +178,17 @@ struct MediaRow: View {
 struct MediaPoster: View {
     let item: MediaItem
     let serverURL: String
+    #if !os(iOS)
     @FocusState private var isFocused: Bool
+    #endif
+
+    private var posterWidth: CGFloat {
+        DeviceType.current == .iPhone ? 120 : (DeviceType.current == .iPad ? 180 : 250)
+    }
+
+    private var posterHeight: CGFloat {
+        DeviceType.current == .iPhone ? 180 : (DeviceType.current == .iPad ? 270 : 375)
+    }
 
     private var imageURL: URL? {
         // Normalize URL
@@ -166,57 +198,64 @@ struct MediaPoster: View {
         }
         let endpoint = "emby/Items/\(item.id)/Images/Primary"
         var components = URLComponents(string: url + endpoint)
+        let maxWidth = DeviceType.current == .iPhone ? 150 : (DeviceType.current == .iPad ? 200 : 250)
         components?.queryItems = [
-            URLQueryItem(name: "maxWidth", value: "250"),
-            URLQueryItem(name: "maxHeight", value: "375"),
+            URLQueryItem(name: "maxWidth", value: "\(maxWidth)"),
+            URLQueryItem(name: "maxHeight", value: "\(Int(Double(maxWidth) * 1.5))"),
             URLQueryItem(name: "quality", value: "90")
         ]
         return components?.url
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 6) {
             // Poster Image
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .empty:
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .frame(width: 250, height: 375)
+                        .frame(width: posterWidth, height: posterHeight)
                 case .success(let image):
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 250, height: 375)
+                        .frame(width: posterWidth, height: posterHeight)
                         .clipped()
                 case .failure:
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .frame(width: 250, height: 375)
+                        .frame(width: posterWidth, height: posterHeight)
                         .overlay(
                             Image(systemName: "photo")
-                                .font(.system(size: 40))
+                                .font(.system(size: DeviceType.current == .iPhone ? 24 : 40))
                                 .foregroundColor(.gray)
                         )
                 @unknown default:
                     EmptyView()
                 }
             }
-            .cornerRadius(12)
-            .frame(width: 250, height: 375)
-            .scaleEffect(isFocused ? 1.1 : 1.0)
-            .shadow(radius: isFocused ? 20 : 0)
+            .cornerRadius(8)
+            .frame(width: posterWidth, height: posterHeight)
+            #if !os(iOS)
+            .scaleEffect(isFocused ? 1.05 : 1.0)
+            .shadow(radius: isFocused ? 10 : 0)
             .animation(.easeInOut(duration: 0.2), value: isFocused)
+            #endif
 
             // Title
             Text(item.name ?? "")
-                .font(.caption)
+                .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                 .lineLimit(2)
-                .frame(width: 250)
+                .frame(width: posterWidth)
+                #if !os(iOS)
                 .opacity(isFocused ? 1.0 : 0.7)
+                #endif
         }
+        #if !os(iOS)
         .focusable()
         .focused($isFocused)
+        #endif
     }
 }
 

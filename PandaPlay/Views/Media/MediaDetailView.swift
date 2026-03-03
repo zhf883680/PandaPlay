@@ -54,17 +54,29 @@ struct MediaDetailView: View {
         return components?.url
     }
 
+    private var horizontalPadding: CGFloat {
+        DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 40 : 80)
+    }
+
+    private var backdropHeight: CGFloat {
+        DeviceType.current == .iPhone ? 220 : (DeviceType.current == .iPad ? 350 : 450)
+    }
+
+    private var contentSpacing: CGFloat {
+        DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 30 : 40)
+    }
+
     var body: some View {
         ScrollView {
             if isLoading {
                 VStack {
                     ProgressView()
-                        .scaleEffect(2)
+                        .scaleEffect(DeviceType.current == .iPhone ? 1.2 : 2)
                     Text("加载中...")
                         .foregroundColor(.secondary)
-                        .padding(.top, 20)
+                        .padding(.top, 12)
                 }
-                .frame(height: 400)
+                .frame(height: backdropHeight)
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     // Backdrop with image and overlay content
@@ -79,12 +91,12 @@ struct MediaDetailView: View {
                                         startPoint: .top,
                                         endPoint: .bottom
                                     ))
-                                    .frame(height: 450)
+                                    .frame(height: backdropHeight)
                             case .success(let image):
                                 image
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
-                                    .frame(height: 450)
+                                    .frame(height: backdropHeight)
                                     .clipped()
                                     .overlay(
                                         Rectangle()
@@ -103,38 +115,42 @@ struct MediaDetailView: View {
                                         startPoint: .top,
                                         endPoint: .bottom
                                     ))
-                                    .frame(height: 450)
+                                    .frame(height: backdropHeight)
                             }
                         }
 
-                        VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: DeviceType.current == .iPhone ? 8 : 20) {
                             // Type Badge
                             if let type = displayItem.type {
                                 Text(type == "Series" ? "电视剧" : type == "Movie" ? "电影" : type)
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
+                                    .font(DeviceType.current == .iPhone ? .caption2 : .caption)
+                                    .padding(.horizontal, DeviceType.current == .iPhone ? 8 : 12)
+                                    .padding(.vertical, DeviceType.current == .iPhone ? 3 : 6)
                                     .background(Color.white.opacity(0.2))
-                                    .cornerRadius(8)
+                                    .cornerRadius(6)
                                     .foregroundColor(.white)
                             }
 
                             // Title
                             Text(displayItem.name ?? "")
-                                .font(.largeTitle)
+                                .font(DeviceType.current == .iPhone ? .title3 : .largeTitle)
                                 .bold()
                                 .foregroundColor(.white)
+                                .lineLimit(2)
 
                             // Metadata
-                            HStack(spacing: 15) {
+                            HStack(spacing: DeviceType.current == .iPhone ? 8 : 15) {
                                 if let year = displayItem.productionYear {
                                     Text(String(year))
                                         .foregroundColor(.white.opacity(0.9))
+                                        .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                                 }
 
                                 if let genres = displayItem.genres, !genres.isEmpty {
-                                    Text(genres.prefix(3).joined(separator: ", "))
+                                    Text(genres.prefix(2).joined(separator: ", "))
                                         .foregroundColor(.white.opacity(0.9))
+                                        .font(DeviceType.current == .iPhone ? .caption2 : .caption)
+                                        .lineLimit(1)
                                 }
 
                                 if let runtime = displayItem.runTimeTicks {
@@ -143,20 +159,22 @@ struct MediaDetailView: View {
                                     if hours > 0 {
                                         Text("\(hours)小时\(minutes)分钟")
                                             .foregroundColor(.white.opacity(0.9))
+                                            .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                                     } else {
                                         Text("\(minutes) 分钟")
                                             .foregroundColor(.white.opacity(0.9))
+                                            .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                                     }
                                 }
 
                                 if let rating = displayItem.communityRating {
-                                    HStack(spacing: 4) {
+                                    HStack(spacing: 2) {
                                         Image(systemName: "star.fill")
                                             .foregroundColor(.yellow)
-                                            .font(.caption)
+                                            .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                                         Text(String(format: "%.1f", rating))
                                             .foregroundColor(.white.opacity(0.9))
-                                            .font(.caption)
+                                            .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                                     }
                                 }
                             }
@@ -167,21 +185,34 @@ struct MediaDetailView: View {
                                     selectedEpisode = displayItem
                                 }) {
                                     Label("播放", systemImage: "play.fill")
-                                        .font(.title3)
+                                        .font(DeviceType.current == .iPhone ? .subheadline : .title3)
                                         .bold()
-                                        .frame(maxWidth: 200)
+                                        .frame(maxWidth: DeviceType.current == .iPhone ? 150 : 200)
                                 }
                                 .buttonStyle(.borderedProminent)
                             }
                         }
-                        .padding(80)
+                        .padding(DeviceType.current == .iPhone ? 16 : 80)
                     }
                     .clipped()
 
                     // Content Section
-                    HStack(alignment: .top, spacing: 60) {
-                        // Left: Season/Episode Selection
-                        VStack(alignment: .leading, spacing: 40) {
+                    if DeviceType.current == .iPhone {
+                        // iPhone: Vertical layout
+                        VStack(alignment: .leading, spacing: contentSpacing) {
+                            // Overview
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("简介")
+                                    .font(.headline)
+                                Text(displayOverview)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .lineSpacing(4)
+                            }
+                            .padding(.horizontal, horizontalPadding)
+                            .padding(.top, contentSpacing)
+
+                            // Season/Episode Selection
                             if displayItem.type == "Series" {
                                 SeasonEpisodeSelector(
                                     seriesId: displayItem.id,
@@ -199,24 +230,47 @@ struct MediaDetailView: View {
                                 .environmentObject(authManager)
                             }
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        // iPad/tvOS: Horizontal layout
+                        HStack(alignment: .top, spacing: 60) {
+                            // Left: Season/Episode Selection
+                            VStack(alignment: .leading, spacing: 40) {
+                                if displayItem.type == "Series" {
+                                    SeasonEpisodeSelector(
+                                        seriesId: displayItem.id,
+                                        serverURL: serverManager.currentServer?.url ?? "",
+                                        accessToken: authManager.accessToken ?? "",
+                                        userId: authManager.userId ?? "",
+                                        onEpisodeSelected: { episode in
+                                            selectedEpisode = episode
+                                        },
+                                        onOverviewChanged: { overview in
+                                            dynamicOverview = overview
+                                        }
+                                    )
+                                    .environmentObject(serverManager)
+                                    .environmentObject(authManager)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                        // Right: Overview (dynamic, changes with season/episode selection)
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("简介")
-                                .font(.title3)
-                                .bold()
-                            Text(displayOverview)
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                                .lineSpacing(5)
+                            // Right: Overview
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("简介")
+                                    .font(.title3)
+                                    .bold()
+                                Text(displayOverview)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                    .lineSpacing(5)
+                            }
+                            .frame(maxWidth: 500, alignment: .leading)
                         }
-                        .frame(maxWidth: 500, alignment: .leading)
+                        .padding(.horizontal, horizontalPadding)
+                        .padding(.top, contentSpacing)
                     }
-                    .padding(.horizontal, 80)
-                    .padding(.top, 40)
 
-                    Spacer(minLength: 100)
+                    Spacer(minLength: DeviceType.current == .iPhone ? 30 : 100)
                 }
             }
         }
@@ -276,6 +330,14 @@ struct SeasonEpisodeSelector: View {
     @State private var selectedEpisodeForPlay: MediaItem?
     @State private var debugMessage: String = ""
 
+    private var horizontalPadding: CGFloat {
+        DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 20 : 30)
+    }
+
+    private var gridColumns: Int {
+        DeviceType.current == .iPhone ? 3 : (DeviceType.current == .iPad ? 4 : 4)
+    }
+
     // Current overview to display
     var currentOverview: String {
         if let episode = selectedEpisode, let overview = episode.overview, !overview.isEmpty {
@@ -287,18 +349,18 @@ struct SeasonEpisodeSelector: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 30) {
+        VStack(alignment: .leading, spacing: DeviceType.current == .iPhone ? 16 : 30) {
             // Seasons
-            VStack(alignment: .leading, spacing: 15) {
+            VStack(alignment: .leading, spacing: DeviceType.current == .iPhone ? 8 : 15) {
                 Text("选季")
-                    .font(.title3)
+                    .font(DeviceType.current == .iPhone ? .subheadline : .title3)
                     .bold()
 
                 if isLoadingSeasons {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else if seasons.isEmpty {
-                    VStack(spacing: 10) {
+                    VStack(spacing: 6) {
                         Text("没有找到季")
                             .foregroundColor(.secondary)
                         if !debugMessage.isEmpty {
@@ -309,7 +371,7 @@ struct SeasonEpisodeSelector: View {
                     }
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 15) {
+                        HStack(spacing: DeviceType.current == .iPhone ? 10 : 15) {
                             ForEach(seasons) { season in
                                 SeasonCard(
                                     season: season,
@@ -319,7 +381,7 @@ struct SeasonEpisodeSelector: View {
                                 .onTapGesture {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         selectedSeason = season
-                                        selectedEpisode = nil  // Clear episode selection when changing season
+                                        selectedEpisode = nil
                                     }
                                     Task {
                                         await loadSeasonDetails(for: season.id)
@@ -329,15 +391,18 @@ struct SeasonEpisodeSelector: View {
                             }
                         }
                     }
+                    #if !os(iOS)
                     .focusSection()
+                    #endif
                 }
             }
+            .padding(.horizontal, horizontalPadding)
 
             // Episodes
             if let season = selectedSeason {
-                VStack(alignment: .leading, spacing: 15) {
+                VStack(alignment: .leading, spacing: DeviceType.current == .iPhone ? 8 : 15) {
                     Text("选集")
-                        .font(.title3)
+                        .font(DeviceType.current == .iPhone ? .subheadline : .title3)
                         .bold()
 
                     if isLoadingEpisodes {
@@ -346,12 +411,7 @@ struct SeasonEpisodeSelector: View {
                         Text("没有找到集")
                             .foregroundColor(.secondary)
                     } else {
-                        LazyVGrid(columns: [
-                            GridItem(.flexible(), spacing: 15),
-                            GridItem(.flexible(), spacing: 15),
-                            GridItem(.flexible(), spacing: 15),
-                            GridItem(.flexible(), spacing: 15)
-                        ], spacing: 15) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: DeviceType.current == .iPhone ? 8 : 15), count: gridColumns), spacing: DeviceType.current == .iPhone ? 8 : 15) {
                             ForEach(episodes) { episode in
                                 EpisodeCard(
                                     episode: episode,
@@ -361,7 +421,6 @@ struct SeasonEpisodeSelector: View {
                                 .onTapGesture {
                                     selectedEpisode = episode
                                     onEpisodeSelected(episode)
-                                    // Update overview when episode is selected
                                     onOverviewChanged(currentOverview)
                                 }
                             }
@@ -369,6 +428,7 @@ struct SeasonEpisodeSelector: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, horizontalPadding)
             }
         }
         .task {
@@ -496,7 +556,25 @@ struct SeasonCard: View {
     let isSelected: Bool
     let serverURL: String
 
+    #if !os(iOS)
     @FocusState private var isFocused: Bool
+    #endif
+
+    private var cardWidth: CGFloat {
+        DeviceType.current == .iPhone ? 80 : (DeviceType.current == .iPad ? 120 : 150)
+    }
+
+    private var cardHeight: CGFloat {
+        DeviceType.current == .iPhone ? 120 : (DeviceType.current == .iPad ? 180 : 225)
+    }
+
+    private var imageWidth: CGFloat {
+        DeviceType.current == .iPhone ? 80 : (DeviceType.current == .iPad ? 120 : 150)
+    }
+
+    private var imageHeight: CGFloat {
+        DeviceType.current == .iPhone ? 100 : (DeviceType.current == .iPad ? 150 : 200)
+    }
 
     private var imageURL: URL? {
         guard let serverURL = serverURL.isEmpty ? nil : serverURL else { return nil }
@@ -506,52 +584,62 @@ struct SeasonCard: View {
         }
         let endpoint = "emby/Items/\(season.id)/Images/Primary"
         var components = URLComponents(string: url + endpoint)
+        let maxWidth = DeviceType.current == .iPhone ? 100 : (DeviceType.current == .iPad ? 150 : 200)
         components?.queryItems = [
-            URLQueryItem(name: "maxWidth", value: "300"),
-            URLQueryItem(name: "maxHeight", value: "450"),
+            URLQueryItem(name: "maxWidth", value: "\(maxWidth)"),
+            URLQueryItem(name: "maxHeight", value: "\(Int(Double(maxWidth) * 1.5))"),
             URLQueryItem(name: "quality", value: "90")
         ]
         return components?.url
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .empty, .failure:
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .frame(width: 150, height: 225)
+                        .frame(width: imageWidth, height: imageHeight)
                         .overlay(
                             Image(systemName: "tv")
-                                .font(.system(size: 40))
+                                .font(.system(size: DeviceType.current == .iPhone ? 20 : 30))
                                 .foregroundColor(.gray)
                         )
                 case .success(let image):
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 150, height: 225)
+                        .frame(width: imageWidth, height: imageHeight)
                         .clipped()
                 @unknown default:
                     EmptyView()
                 }
             }
-            .cornerRadius(8)
+            .cornerRadius(6)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 3)
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
             )
-            .scaleEffect(isFocused ? 1.05 : 1.0)
+            #if !os(iOS)
+            .scaleEffect(isFocused ? 1.03 : 1.0)
             .animation(.easeInOut(duration: 0.2), value: isFocused)
+            #endif
 
             Text(season.name ?? "第 \(season.indexNumber ?? 1) 季")
-                .font(.caption)
+                .font(DeviceType.current == .iPhone ? .caption2 : .caption)
+                #if !os(iOS)
                 .foregroundColor(isFocused ? .primary : .secondary)
+                #else
+                .foregroundColor(.secondary)
+                #endif
+                .lineLimit(1)
         }
-        .frame(width: 150)
+        .frame(width: cardWidth)
+        #if !os(iOS)
         .focusable()
         .focused($isFocused)
+        #endif
     }
 }
 
@@ -562,7 +650,13 @@ struct EpisodeCard: View {
     let serverURL: String
     let isSelected: Bool
 
+    #if !os(iOS)
     @FocusState private var isFocused: Bool
+    #endif
+
+    private var imageHeight: CGFloat {
+        DeviceType.current == .iPhone ? 60 : (DeviceType.current == .iPad ? 90 : 110)
+    }
 
     private var imageURL: URL? {
         guard !serverURL.isEmpty else { return nil }
@@ -572,16 +666,17 @@ struct EpisodeCard: View {
         }
         let endpoint = "emby/Items/\(episode.id)/Images/Primary"
         var components = URLComponents(string: url + endpoint)
+        let maxWidth = DeviceType.current == .iPhone ? 120 : (DeviceType.current == .iPad ? 180 : 200)
         components?.queryItems = [
-            URLQueryItem(name: "maxWidth", value: "300"),
-            URLQueryItem(name: "maxHeight", value: "169"),
+            URLQueryItem(name: "maxWidth", value: "\(maxWidth)"),
+            URLQueryItem(name: "maxHeight", value: "\(Int(Double(maxWidth) * 9.0 / 16.0))"),
             URLQueryItem(name: "quality", value: "90")
         ]
         return components?.url
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             ZStack(alignment: .bottomTrailing) {
                 AsyncImage(url: imageURL) { phase in
                     switch phase {
@@ -589,55 +684,58 @@ struct EpisodeCard: View {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .aspectRatio(16/9, contentMode: .fit)
+                            .frame(height: imageHeight)
                             .overlay(
                                 Image(systemName: "play.circle")
-                                    .font(.system(size: 30))
+                                    .font(.system(size: DeviceType.current == .iPhone ? 18 : 24))
                                     .foregroundColor(.gray)
                             )
                     case .success(let image):
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(height: 110)
+                            .frame(height: imageHeight)
                             .clipped()
                     @unknown default:
                         EmptyView()
                     }
                 }
-                .cornerRadius(8)
+                .cornerRadius(6)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(isSelected ? Color.blue : (isFocused ? Color.blue.opacity(0.5) : Color.clear), lineWidth: isSelected ? 3 : 2)
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
                 )
 
                 // Episode number badge
                 if let index = episode.indexNumber {
                     Text("第 \(index) 集")
-                        .font(.caption2)
-                        .padding(.horizontal, 6)
+                        .font(DeviceType.current == .iPhone ? .caption2 : .caption2)
+                        .padding(.horizontal, 4)
                         .padding(.vertical, 2)
                         .background(Color.black.opacity(0.7))
                         .cornerRadius(4)
                         .foregroundColor(.white)
-                        .padding(4)
+                        .padding(3)
                 }
             }
 
             Text(episode.name ?? "第 \(episode.indexNumber ?? 1) 集")
-                .font(.caption)
+                .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                 .lineLimit(2)
-                .foregroundColor(isFocused ? .primary : .secondary)
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(8)
+        .padding(DeviceType.current == .iPhone ? 4 : 6)
+        #if !os(iOS)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 8)
                 .fill(isFocused ? Color.blue.opacity(0.1) : Color.clear)
         )
         .scaleEffect(isFocused ? 1.02 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isFocused)
         .focusable()
         .focused($isFocused)
+        #endif
     }
 }
 

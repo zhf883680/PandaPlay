@@ -1,10 +1,15 @@
-# PandaPlay - Emby/Jellyfin Apple TV Player
+# PandaPlay - Emby/Jellyfin Player
 
-An advanced tvOS media player for Emby/Jellyfin servers with MKV support.
+An advanced media player for Emby/Jellyfin servers with multi-platform support.
 
 [中文文档](README_CN.md)
 
 ## Features
+
+- **Multi-Platform Support**
+  - iOS (iPhone & iPad) with native touch interface
+  - tvOS with Siri Remote support
+  - Responsive design optimized for each device type
 
 - **Server Connection**
   - Emby/Jellyfin server authentication
@@ -16,40 +21,51 @@ An advanced tvOS media player for Emby/Jellyfin servers with MKV support.
   - Season and episode navigation
 
 - **Video Playback**
-  - **MKV format support** via KSPlayer
+  - **Wide format support** via MobileVLCKit (MKV, MP4, AVI, etc.)
   - Direct streaming (no server transcoding)
   - Hardware-accelerated decoding
-  - Subtitle and audio track support
+  - **Subtitle track selection with on/off toggle**
+  - Multiple audio track support
+  - **Comprehensive player controls** (play/pause, seek, progress bar)
+  - Auto-hide controls after 4 seconds of inactivity
 
 - **User Experience**
-  - Native tvOS interface with Siri Remote support
-  - Focus-based navigation
+  - Native iOS/tvOS interface
+  - Focus-based navigation on tvOS
   - Smooth image loading with blur hash placeholders
+  - Secure password input with SecureField
 
 ## Requirements
 
 - macOS 14.0+
 - Xcode 15.0+
-- tvOS 15.0+
-- Apple TV HD (4th gen) or Apple TV 4K
+- iOS 15.0+ / tvOS 15.0+
+- CocoaPods
 
 ## Installation
 
 ### Building from Source
 
 1. Clone the repository
-2. Open `PandaPlay.xcodeproj` in Xcode
-3. Select your development team in project settings
-4. Build and run on tvOS Simulator or Apple TV
+2. Install CocoaPods dependencies:
+   ```bash
+   cd PandaPlay
+   pod install
+   ```
+3. Open `PandaPlay.xcworkspace` in Xcode (use .xcworkspace, not .xcodeproj)
+4. Select your development team in project settings
+5. Build and run on iOS Simulator, tvOS Simulator, or physical device
 
 ### Dependencies
 
-The project uses Swift Package Manager for dependencies:
+The project uses CocoaPods for dependency management:
 
-- **KSPlayer** - Media player with FFmpeg support for MKV and other formats
-- **FFmpegKit** - Required by KSPlayer for media decoding
+- **MobileVLCKit** (~> 3.3.0) - Media player with VLC's FFmpeg-based decoding engine
+  - Supports MKV, MP4, AVI, MOV, and many other formats
+  - Hardware-accelerated decoding on iOS/tvOS
+  - Built-in subtitle and audio track support
 
-These are automatically resolved when building the project.
+These are automatically resolved when running `pod install`.
 
 ## Configuration
 
@@ -69,14 +85,14 @@ PandaPlay/
 ├── Views/                      # UI views
 │   ├── Onboarding/            # Setup & login screens
 │   ├── Media/                 # Media browsing (home, detail)
-│   ├── Player/                # Video player with KSPlayer
+│   ├── Player/                # Video player with MobileVLCKit
 │   ├── Settings/              # Settings management
 │   └── Components/            # Reusable UI components
 ├── ViewModels/                 # View models
 │   ├── ServerManager.swift    # Server configuration
 │   ├── AuthManager.swift      # Authentication state
 │   ├── HomeViewModel.swift    # Media library logic
-│   └── PlayerViewModel.swift  # Player logic
+│   └── PlayerViewModel.swift  # Player logic with subtitle/track management
 ├── Models/                     # Data models
 │   └── AppError.swift         # Error types
 ├── Services/                   # Service layer
@@ -85,8 +101,23 @@ PandaPlay/
 │   ├── KeychainManager.swift  # Secure storage
 │   ├── PlaybackProgressManager.swift
 │   └── UserDefaultsManager.swift
+├── Utils/                      # Utility functions
+│   └── DeviceType.swift       # Device detection and responsive layout helpers
 └── Assets.xcassets            # Images and resources
 ```
+
+## Platform-Specific Features
+
+### iOS (iPhone/iPad)
+- Touch-based controls
+- Swipe gestures for navigation
+- Compact and regular size class support
+- On-screen player controls with auto-hide
+
+### tvOS
+- Siri Remote integration
+- Focus-based navigation
+- Simplified control scheme optimized for remote
 
 ## Known Issues
 
@@ -94,7 +125,7 @@ PandaPlay/
 
 ## License
 
-This project uses KSPlayer which is licensed under GPL. Please ensure compliance with KSPlayer's license terms if you fork or modify this project.
+This project uses MobileVLCKit which is licensed under LGPL v2.1 (or later). Please ensure compliance with MobileVLCKit's license terms if you fork or modify this project.
 
 ## Contributing
 

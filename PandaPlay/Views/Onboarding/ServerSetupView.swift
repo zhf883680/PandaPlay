@@ -21,30 +21,46 @@ struct ServerSetupView: View {
         case serverURL, serverName
     }
 
+    private var horizontalPadding: CGFloat {
+        DeviceType.current == .iPhone ? 24 : (DeviceType.current == .iPad ? 60 : 80)
+    }
+
+    private var spacing: CGFloat {
+        DeviceType.current == .iPhone ? 20 : 40
+    }
+
+    private var iconSize: CGFloat {
+        DeviceType.current == .iPhone ? 50 : (DeviceType.current == .iPad ? 70 : 80)
+    }
+
+    private var maxWidth: CGFloat {
+        DeviceType.current == .iPhone ? .infinity : 500
+    }
+
     var body: some View {
-        VStack(spacing: 40) {
+        VStack(spacing: spacing) {
             // Logo/Title
-            VStack(spacing: 20) {
+            VStack(spacing: DeviceType.current == .iPhone ? 12 : 20) {
                 Image(systemName: "play.rectangle.fill")
-                    .font(.system(size: 80))
+                    .font(.system(size: iconSize))
                     .foregroundColor(.blue)
 
                 Text("PandaPlay")
-                    .font(.title)
+                    .font(DeviceType.current == .iPhone ? .title2 : .title)
                     .bold()
 
                 Text("设置您的 Emby 服务器")
-                    .font(.subheadline)
+                    .font(DeviceType.current == .iPhone ? .caption : .subheadline)
                     .foregroundColor(.secondary)
             }
 
             // Input Fields
-            VStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
+            VStack(spacing: DeviceType.current == .iPhone ? 12 : 20) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("服务器地址")
-                        .font(.headline)
+                        .font(DeviceType.current == .iPhone ? .subheadline : .headline)
                     TextField("https://your-server:8096", text: $serverURL)
-                        .padding(12)
+                        .padding(DeviceType.current == .iPhone ? 10 : 12)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(8)
                         .autocapitalization(.none)
@@ -52,43 +68,44 @@ struct ServerSetupView: View {
                         .focused($focusedField, equals: .serverURL)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("服务器名称（可选）")
-                        .font(.headline)
+                        .font(DeviceType.current == .iPhone ? .subheadline : .headline)
                     TextField("我的服务器", text: $serverName)
-                        .padding(12)
+                        .padding(DeviceType.current == .iPhone ? 10 : 12)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(8)
                         .focused($focusedField, equals: .serverName)
                 }
             }
-            .frame(maxWidth: 500)
+            .frame(maxWidth: maxWidth)
+            .padding(.horizontal, horizontalPadding)
 
             // Error Message
             if let error = errorMessage {
                 Text(error)
                     .foregroundColor(.red)
-                    .font(.caption)
+                    .font(DeviceType.current == .iPhone ? .caption2 : .caption)
             }
 
             // Connect Button
             Button(action: connectServer) {
                 if isLoading {
                     ProgressView()
-                        .scaleEffect(1.5)
+                        .scaleEffect(DeviceType.current == .iPhone ? 1.2 : 1.5)
                 } else {
                     Text("连接服务器")
-                        .font(.title3)
+                        .font(DeviceType.current == .iPhone ? .subheadline : .title3)
                         .bold()
                 }
             }
             .buttonStyle(.borderedProminent)
             .disabled(serverURL.isEmpty || isLoading)
-            .frame(minWidth: 200)
+            .frame(minWidth: DeviceType.current == .iPhone ? 140 : 200)
 
             Spacer()
         }
-        .padding(80)
+        .padding(DeviceType.current == .iPhone ? 20 : horizontalPadding)
     }
 
     private func connectServer() {

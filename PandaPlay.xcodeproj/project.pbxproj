@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E027E5A32F554FC90066E6F0 /* KSPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E027E5A22F554FC90066E6F0 /* KSPlayer */; };
+		D9DD6C841747A5AA67A298F6 /* libPods-PandaPlay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CD2EEEA8ABA4B23475744CC1 /* libPods-PandaPlay.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,6 +28,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		40E01D82D908C8369264ACDB /* Pods-PandaPlay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PandaPlay.debug.xcconfig"; path = "Target Support Files/Pods-PandaPlay/Pods-PandaPlay.debug.xcconfig"; sourceTree = "<group>"; };
+		5F14AAC875D41CBC8D25501A /* Pods-PandaPlay.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PandaPlay.release.xcconfig"; path = "Target Support Files/Pods-PandaPlay/Pods-PandaPlay.release.xcconfig"; sourceTree = "<group>"; };
+		CD2EEEA8ABA4B23475744CC1 /* libPods-PandaPlay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PandaPlay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E3799F2F55206D00CF1A3C /* PandaPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PandaPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E379AC2F55206F00CF1A3C /* PandaPlayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PandaPlayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E379B62F55206F00CF1A3C /* PandaPlayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PandaPlayUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -54,11 +57,15 @@
 		};
 		E0E379AF2F55206F00CF1A3C /* PandaPlayTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = PandaPlayTests;
 			sourceTree = "<group>";
 		};
 		E0E379B92F55206F00CF1A3C /* PandaPlayUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = PandaPlayUITests;
 			sourceTree = "<group>";
 		};
@@ -69,7 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E027E5A32F554FC90066E6F0 /* KSPlayer in Frameworks */,
+				D9DD6C841747A5AA67A298F6 /* libPods-PandaPlay.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +97,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		167DA416A48DDB38326816AB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				40E01D82D908C8369264ACDB /* Pods-PandaPlay.debug.xcconfig */,
+				5F14AAC875D41CBC8D25501A /* Pods-PandaPlay.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		E0E379962F55206D00CF1A3C = {
 			isa = PBXGroup;
 			children = (
@@ -97,6 +113,8 @@
 				E0E379AF2F55206F00CF1A3C /* PandaPlayTests */,
 				E0E379B92F55206F00CF1A3C /* PandaPlayUITests */,
 				E0E379A02F55206D00CF1A3C /* Products */,
+				167DA416A48DDB38326816AB /* Pods */,
+				F6E38784B2EC47D5D78ACE85 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -110,6 +128,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		F6E38784B2EC47D5D78ACE85 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CD2EEEA8ABA4B23475744CC1 /* libPods-PandaPlay.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -117,9 +143,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E0E379C02F55206F00CF1A3C /* Build configuration list for PBXNativeTarget "PandaPlay" */;
 			buildPhases = (
+				1A2C134FDD648CA131BE6AAF /* [CP] Check Pods Manifest.lock */,
 				E0E3799B2F55206D00CF1A3C /* Sources */,
 				E0E3799C2F55206D00CF1A3C /* Frameworks */,
 				E0E3799D2F55206D00CF1A3C /* Resources */,
+				7373980299AB67ED127E0126 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -129,9 +157,6 @@
 				E0E379A12F55206D00CF1A3C /* PandaPlay */,
 			);
 			name = PandaPlay;
-			packageProductDependencies = (
-				E027E5A22F554FC90066E6F0 /* KSPlayer */,
-			);
 			productName = PandaPlay;
 			productReference = E0E3799F2F55206D00CF1A3C /* PandaPlay.app */;
 			productType = "com.apple.product-type.application";
@@ -153,8 +178,6 @@
 				E0E379AF2F55206F00CF1A3C /* PandaPlayTests */,
 			);
 			name = PandaPlayTests;
-			packageProductDependencies = (
-			);
 			productName = PandaPlayTests;
 			productReference = E0E379AC2F55206F00CF1A3C /* PandaPlayTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -176,8 +199,6 @@
 				E0E379B92F55206F00CF1A3C /* PandaPlayUITests */,
 			);
 			name = PandaPlayUITests;
-			packageProductDependencies = (
-			);
 			productName = PandaPlayUITests;
 			productReference = E0E379B62F55206F00CF1A3C /* PandaPlayUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -214,9 +235,6 @@
 			);
 			mainGroup = E0E379962F55206D00CF1A3C;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				E027E5A12F554FC90066E6F0 /* XCRemoteSwiftPackageReference "KSPlayer" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E0E379A02F55206D00CF1A3C /* Products */;
 			projectDirPath = "";
@@ -252,6 +270,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1A2C134FDD648CA131BE6AAF /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PandaPlay-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7373980299AB67ED127E0126 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay/Pods-PandaPlay-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay/Pods-PandaPlay-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PandaPlay/Pods-PandaPlay-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E0E3799B2F55206D00CF1A3C /* Sources */ = {
@@ -329,7 +389,7 @@
 				DEVELOPMENT_TEAM = 398C6FWMAW;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -395,7 +455,7 @@
 				DEVELOPMENT_TEAM = 398C6FWMAW;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -418,6 +478,7 @@
 		};
 		E0E379C12F55206F00CF1A3C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 40E01D82D908C8369264ACDB /* Pods-PandaPlay.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -430,6 +491,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -438,17 +500,21 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlay;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 3;
+				TARGETED_DEVICE_FAMILY = "1,3";
+				TVOS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Debug;
 		};
 		E0E379C22F55206F00CF1A3C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5F14AAC875D41CBC8D25501A /* Pods-PandaPlay.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -461,6 +527,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -469,12 +536,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.pandaplay.emby.PandaPlay;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 3;
+				TARGETED_DEVICE_FAMILY = "1,3";
+				TVOS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Release;
 		};
@@ -602,25 +672,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		E027E5A12F554FC90066E6F0 /* XCRemoteSwiftPackageReference "KSPlayer" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kingslay/KSPlayer.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		E027E5A22F554FC90066E6F0 /* KSPlayer */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E027E5A12F554FC90066E6F0 /* XCRemoteSwiftPackageReference "KSPlayer" */;
-			productName = KSPlayer;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E0E379972F55206D00CF1A3C /* Project object */;
 }
