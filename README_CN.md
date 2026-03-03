@@ -63,7 +63,17 @@
    ```
 3. 在 Xcode 中打开 `PandaPlay.xcworkspace`（使用 .xcworkspace，不是 .xcodeproj）
 4. 在项目设置中选择开发团队
-5. 在 iOS 模拟器、tvOS 模拟器或真机上构建运行
+5. **生成应用图标**（参见下方[应用图标设计](#应用图标设计)）
+6. 在 iOS 模拟器、tvOS 模拟器或真机上构建运行
+
+### 应用图标设计
+
+项目包含自定义的熊猫主题应用图标设计。完整指南请参阅 `ICON_DESIGN.md`。
+
+**快速开始：**
+- 图标源文件：`AppIcon.svg`
+- 使用 [AppIconGenerator](https://appicon.co) 或 ImageMagick 生成不同平台的图标
+- 详细说明请参阅 `ICON_DESIGN.md`
 
 ### 依赖项
 

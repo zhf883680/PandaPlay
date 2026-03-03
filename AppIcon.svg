@@ -1,0 +1,44 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2C3E50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A252F;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="pandaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E8E8E8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bgGradient)"/>
+
+  <!-- Panda ears -->
+  <circle cx="230" cy="280" r="130" fill="#1A1A1A"/>
+  <circle cx="794" cy="280" r="130" fill="#1A1A1A"/>
+
+  <!-- Panda face -->
+  <ellipse cx="512" cy="520" rx="280" ry="260" fill="url(#pandaGradient)"/>
+
+  <!-- Eye patches -->
+  <ellipse cx="380" cy="480" rx="75" ry="85" fill="#1A1A1A" transform="rotate(-15 380 480)"/>
+  <ellipse cx="644" cy="480" rx="75" ry="85" fill="#1A1A1A" transform="rotate(15 644 480)"/>
+
+  <!-- Eyes -->
+  <circle cx="380" cy="480" r="45" fill="#FFFFFF"/>
+  <circle cx="644" cy="480" r="45" fill="#FFFFFF"/>
+
+  <!-- Pupils with play button hint -->
+  <circle cx="380" cy="480" r="25" fill="#1A1A1A"/>
+  <circle cx="644" cy="480" r="25" fill="#1A1A1A"/>
+
+  <!-- Nose -->
+  <ellipse cx="512" cy="580" rx="45" ry="35" fill="#2C2C2C"/>
+
+  <!-- Mouth -->
+  <path d="M 470 630 Q 512 660 554 630" stroke="#1A1A1A" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- Play button overlay (subtle) -->
+  <polygon points="480,720 480,830 590,775" fill="#3498DB" opacity="0.9"/>
+</svg>

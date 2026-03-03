@@ -72,6 +72,13 @@ struct PlayerView: View {
     @State private var controlsTimer: Task<Void, Never>?
     @State private var showSubtitleMenu = false
 
+    #if os(tvOS)
+    @FocusState private var focusedButton: FocusedButton?
+    enum FocusedButton {
+        case back, close, rewind, subtitles, playPause, forward
+    }
+    #endif
+
     private var loadingScale: CGFloat {
         DeviceType.current == .iPhone ? 1.2 : (DeviceType.current == .iPad ? 1.5 : 2)
     }
@@ -84,6 +91,23 @@ struct PlayerView: View {
                 // Video player view
                 VLCPlayerView(player: player)
                     .ignoresSafeArea()
+                    #if os(tvOS)
+                    .onPlayPauseCommand {
+                        // Handle Siri Remote play/pause button
+                        if viewModel.isPlaying {
+                            viewModel.pause()
+                        } else {
+                            viewModel.play()
+                        }
+                    }
+                    .onTapGesture(count: 1) {
+                        // Single tap to toggle controls on tvOS
+                        withAnimation {
+                            showControls.toggle()
+                        }
+                        resetControlsTimer()
+                    }
+                    #endif
 
                 // Player controls overlay
                 if showControls {
@@ -154,6 +178,10 @@ struct PlayerView: View {
                 // Auto play after loading
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     viewModel.play()
+                    #if os(tvOS)
+                    // Set initial focus on play/pause button for tvOS
+                    focusedButton = .playPause
+                    #endif
                 }
             }
         }
@@ -169,10 +197,14 @@ struct PlayerView: View {
                     Image(systemName: "chevron.left")
                         .font(.title3)
                         .foregroundColor(.white)
-                        .padding(DeviceType.current == .iPhone ? 8 : 12)
+                        .padding(DeviceType.current == .iPhone ? 8 : 16)
                         .background(Color.black.opacity(0.6))
                         .clipShape(Circle())
                 }
+                #if os(tvOS)
+                .focusable()
+                .focused($focusedButton, equals: .back)
+                #endif
 
                 Spacer()
 
@@ -187,10 +219,14 @@ struct PlayerView: View {
                     Image(systemName: "xmark")
                         .font(.title3)
                         .foregroundColor(.white)
-                        .padding(DeviceType.current == .iPhone ? 8 : 12)
+                        .padding(DeviceType.current == .iPhone ? 8 : 16)
                         .background(Color.black.opacity(0.6))
                         .clipShape(Circle())
                 }
+                #if os(tvOS)
+                .focusable()
+                .focused($focusedButton, equals: .close)
+                #endif
             }
             .padding()
             .background(Color.black.opacity(0.4))
@@ -198,7 +234,7 @@ struct PlayerView: View {
             Spacer()
 
             // Bottom controls
-            VStack(spacing: DeviceType.current == .iPhone ? 8 : 12) {
+            VStack(spacing: DeviceType.current == .iPhone ? 8 : 16) {
                 // Progress bar
                 VStack(spacing: 4) {
                     HStack {
@@ -218,16 +254,17 @@ struct PlayerView: View {
                             // Background
                             Rectangle()
                                 .fill(Color.white.opacity(0.3))
-                                .frame(height: DeviceType.current == .iPhone ? 4 : 6)
+                                .frame(height: DeviceType.current == .iPhone ? 4 : 8)
 
                             // Progress
                             if viewModel.duration > 0 {
                                 Rectangle()
                                     .fill(Color.blue)
-                                    .frame(width: geometry.size.width * CGFloat(viewModel.currentTime) / CGFloat(viewModel.duration), height: DeviceType.current == .iPhone ? 4 : 6)
+                                    .frame(width: geometry.size.width * CGFloat(viewModel.currentTime) / CGFloat(viewModel.duration), height: DeviceType.current == .iPhone ? 4 : 8)
                             }
                         }
-                        .cornerRadius(2)
+                        .cornerRadius(4)
+                        #if os(iOS)
                         .contentShape(Rectangle())
                         .gesture(
                             DragGesture(minimumDistance: 0)
@@ -237,21 +274,31 @@ struct PlayerView: View {
                                     viewModel.seek(to: newTime * 1000)
                                 }
                         )
+                        #elseif os(tvOS)
+                        .focusable()
+                        .digitalCrownRotation($viewModel.currentTime, from: 0, through: viewModel.duration, sensitivity: .medium)
+                        #endif
                     }
-                    .frame(height: DeviceType.current == .iPhone ? 4 : 6)
+                    .frame(height: DeviceType.current == .iPhone ? 4 : 8)
                 }
 
                 // Playback controls
-                HStack(spacing: DeviceType.current == .iPhone ? 25 : 45) {
+                HStack(spacing: DeviceType.current == .iPhone ? 25 : 60) {
                     // Rewind 10 seconds
                     Button(action: {
                         let newTime = max(0, viewModel.currentTime - 10000)
                         viewModel.seek(to: newTime)
                     }) {
                         Image(systemName: "gobackward.10")
-                            .font(.title2)
+                            .font(DeviceType.current == .iPhone ? .title2 : .system(size: 48))
                             .foregroundColor(.white)
+                            .frame(width: DeviceType.current == .iPhone ? 44 : 80,
+                                   height: DeviceType.current == .iPhone ? 44 : 80)
                     }
+                    #if os(tvOS)
+                    .focusable()
+                    .focused($focusedButton, equals: .rewind)
+                    #endif
 
                     // Subtitles button
                     Button(action: {
@@ -259,17 +306,23 @@ struct PlayerView: View {
                     }) {
                         ZStack(alignment: .topLeading) {
                             Image(systemName: "captions.bubble")
-                                .font(.title2)
+                                .font(DeviceType.current == .iPhone ? .title2 : .system(size: 48))
                                 .foregroundColor(.white)
+                                .frame(width: DeviceType.current == .iPhone ? 44 : 80,
+                                       height: DeviceType.current == .iPhone ? 44 : 80)
 
                             if viewModel.currentSubtitleIndex != -1 {
                                 Circle()
                                     .fill(Color.blue)
-                                    .frame(width: 8, height: 8)
-                                    .offset(x: -8, y: -4)
+                                    .frame(width: DeviceType.current == .iPhone ? 8 : 12, height: DeviceType.current == .iPhone ? 8 : 12)
+                                    .offset(x: DeviceType.current == .iPhone ? -8 : -12, y: DeviceType.current == .iPhone ? -4 : -6)
                             }
                         }
                     }
+                    #if os(tvOS)
+                    .focusable()
+                    .focused($focusedButton, equals: .subtitles)
+                    #endif
                     #if os(iOS)
                     .confirmationDialog("选择字幕", isPresented: $showSubtitleMenu, titleVisibility: .visible) {
                         ForEach(viewModel.subtitleTracks) { track in
@@ -279,7 +332,7 @@ struct PlayerView: View {
                         }
                     }
                     #elseif os(tvOS)
-                    .contextMenu {
+                    .confirmationDialog("选择字幕", isPresented: $showSubtitleMenu, titleVisibility: .visible) {
                         ForEach(viewModel.subtitleTracks) { track in
                             Button(track.displayName) {
                                 viewModel.setSubtitleTrack(index: track.id)
@@ -297,9 +350,15 @@ struct PlayerView: View {
                         }
                     }) {
                         Image(systemName: viewModel.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: DeviceType.current == .iPhone ? 50 : 60))
+                            .font(.system(size: DeviceType.current == .iPhone ? 50 : 72))
                             .foregroundColor(.white)
+                            .frame(width: DeviceType.current == .iPhone ? 60 : 100,
+                                   height: DeviceType.current == .iPhone ? 60 : 100)
                     }
+                    #if os(tvOS)
+                    .focusable()
+                    .focused($focusedButton, equals: .playPause)
+                    #endif
 
                     // Forward 10 seconds
                     Button(action: {
@@ -307,11 +366,17 @@ struct PlayerView: View {
                         viewModel.seek(to: newTime)
                     }) {
                         Image(systemName: "goforward.10")
-                            .font(.title2)
+                            .font(DeviceType.current == .iPhone ? .title2 : .system(size: 48))
                             .foregroundColor(.white)
+                            .frame(width: DeviceType.current == .iPhone ? 44 : 80,
+                                   height: DeviceType.current == .iPhone ? 44 : 80)
                     }
+                    #if os(tvOS)
+                    .focusable()
+                    .focused($focusedButton, equals: .forward)
+                    #endif
                 }
-                .padding(.vertical, DeviceType.current == .iPhone ? 8 : 12)
+                .padding(.vertical, DeviceType.current == .iPhone ? 8 : 16)
             }
             .padding()
             .background(Color.black.opacity(0.4))

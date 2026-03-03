@@ -65,7 +65,17 @@ An advanced media player for Emby/Jellyfin servers with multi-platform support.
    ```
 3. Open `PandaPlay.xcworkspace` in Xcode (use .xcworkspace, not .xcodeproj)
 4. Select your development team in project settings
-5. Build and run on iOS Simulator, tvOS Simulator, or physical device
+5. **Generate app icons** (see [App Icon Design](#app-icon-design) below)
+6. Build and run on iOS Simulator, tvOS Simulator, or physical device
+
+### App Icon Design
+
+The project includes a custom panda-themed app icon design. See `ICON_DESIGN.md` for complete guidelines on generating icons for different platforms.
+
+**Quick Start:**
+- Icon source: `AppIcon.svg`
+- Use [AppIconGenerator](https://appicon.co) or ImageMagick to generate platform-specific sizes
+- Refer to `ICON_DESIGN.md` for detailed instructions
 
 ### Dependencies
 
