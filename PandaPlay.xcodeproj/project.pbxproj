@@ -78,16 +78,22 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E06B742C2F56892D008C3646 /* PandaPlay-iOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "PandaPlay-iOS";
 			sourceTree = "<group>";
 		};
 		E06B743A2F56892E008C3646 /* PandaPlay-iOSTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "PandaPlay-iOSTests";
 			sourceTree = "<group>";
 		};
 		E06B74442F56892E008C3646 /* PandaPlay-iOSUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "PandaPlay-iOSUITests";
 			sourceTree = "<group>";
 		};
@@ -102,11 +108,15 @@
 		};
 		E0E379AF2F55206F00CF1A3C /* PandaPlayTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = PandaPlayTests;
 			sourceTree = "<group>";
 		};
 		E0E379B92F55206F00CF1A3C /* PandaPlayUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = PandaPlayUITests;
 			sourceTree = "<group>";
 		};
@@ -474,13 +484,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay-iOS/Pods-PandaPlay-iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay-iOS/Pods-PandaPlay-iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -517,13 +523,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay/Pods-PandaPlay-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PandaPlay/Pods-PandaPlay-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

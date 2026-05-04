@@ -39,6 +39,7 @@ struct ServerManagerView: View {
                 .onTapGesture {
                     switchToServer(server)
                 }
+                #if os(iOS)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button {
                         editingServer = server
@@ -54,6 +55,7 @@ struct ServerManagerView: View {
                         Label("删除", systemImage: "trash")
                     }
                 }
+                #endif
             }
             .onDelete(perform: deleteServer)
 

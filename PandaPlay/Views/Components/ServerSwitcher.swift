@@ -171,7 +171,9 @@ struct ServerListView: View {
                 }
             }
             .navigationTitle("选择服务器")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
@@ -232,7 +234,9 @@ struct ServerManagementSheet: View {
         NavigationView {
             ServerManagerView()
                 .navigationTitle("服务器管理")
+                #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("完成") {

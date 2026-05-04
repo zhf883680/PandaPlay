@@ -48,6 +48,8 @@ struct HomeView: View {
                     MediaDetailView(mediaItem: item)
                 case .player(let item):
                     PlayerView(mediaItem: item)
+                case .library(let item):
+                    LibraryBrowseView(library: item)
                 }
             }
             .navigationDestination(item: $selectedSection) { section in
@@ -294,6 +296,31 @@ struct HomeView: View {
             )
         }
 
+        // Next Up
+        if !viewModel.nextUpItems.isEmpty {
+            MediaRow(
+                title: "下一集",
+                items: viewModel.nextUpItems,
+                serverURL: serverManager.currentServer?.url ?? "",
+                displayMode: .resume,
+                onSelect: { item in
+                    selectedDestination = .player(item)
+                }
+            )
+        }
+
+        // Latest
+        if !viewModel.latestItems.isEmpty {
+            MediaRow(
+                title: "最新添加",
+                items: viewModel.latestItems,
+                serverURL: serverManager.currentServer?.url ?? "",
+                onSelect: { item in
+                    selectedDestination = .detail(item)
+                }
+            )
+        }
+
         // Movies
         if !viewModel.movies.isEmpty {
             MediaRow(
@@ -322,6 +349,31 @@ struct HomeView: View {
                     selectedDestination = .detail(item)
                 }
             )
+        }
+
+        // Libraries
+        if !viewModel.libraries.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("媒体库")
+                    .font(DeviceType.current == .iPhone ? .headline : .title2)
+                    .bold()
+                    .padding(.horizontal, horizontalPadding)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DeviceType.current == .iPhone ? 12 : (DeviceType.current == .iPad ? 20 : 30)) {
+                        ForEach(viewModel.libraries) { library in
+                            LibraryTile(library: library)
+                                .onTapGesture {
+                                    selectedDestination = .library(library)
+                                }
+                        }
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                }
+                #if !os(iOS)
+                .focusSection()
+                #endif
+            }
         }
 
         Spacer(minLength: DeviceType.current == .iPhone ? 30 : 100)
@@ -356,7 +408,7 @@ struct MediaRow: View {
 
                 Spacer(minLength: 8)
 
-                if title != "继续观看", items.count > maxPreviewCount, let onMore {
+                if title != "继续观看" && title != "下一集", items.count > maxPreviewCount, let onMore {
                     Button("更多") {
                         onMore()
                     }
@@ -519,6 +571,7 @@ enum MediaPosterDisplayMode {
 enum HomeNavigationDestination: Identifiable, Hashable {
     case detail(MediaItem)
     case player(MediaItem)
+    case library(MediaItem)
 
     var id: String {
         switch self {
@@ -526,12 +579,16 @@ enum HomeNavigationDestination: Identifiable, Hashable {
             return "detail-\(item.id)"
         case .player(let item):
             return "player-\(item.id)"
+        case .library(let item):
+            return "library-\(item.id)"
         }
     }
 }
 
 enum HomeMediaSection: String, Identifiable, CaseIterable {
     case resume
+    case nextUp
+    case latest
     case movies
     case tvShows
 
@@ -541,6 +598,10 @@ enum HomeMediaSection: String, Identifiable, CaseIterable {
         switch self {
         case .resume:
             return "继续观看"
+        case .nextUp:
+            return "下一集"
+        case .latest:
+            return "最新添加"
         case .movies:
             return "电影"
         case .tvShows:

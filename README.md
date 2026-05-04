@@ -1,51 +1,62 @@
 # PandaPlay
 
-PandaPlay is a SwiftUI client for Emby/Jellyfin on Apple platforms.
+A SwiftUI media client for Emby/Jellyfin servers, supporting iPhone, iPad, and Apple TV.
 
-## Implemented Features
+## Requirements
 
-### Home
-- Continue Watching section from server resume data.
-- Resume cards use two-line text:
-  - line 1: series name (or item name)
-  - line 2: episode info + title when available
-- Home rows show up to 10 preview items.
-- `More` entry for non-resume sections.
-- Removed `Recently Added` section from home.
+- macOS 15.0+
+- Xcode 16.0+
+- [CocoaPods](https://cocoapods.org/) (`gem install cocoapods`)
 
-### More List
-- Dedicated list page for sections with paging.
-- Infinite load when scrolling near the bottom.
-- Sort options:
-  - by date added
-  - by media duration/time
+## Getting Started
 
-### Search
-- Added global search entry on home toolbar.
-- Added `SearchView` with server-side keyword search.
-- Supports searching Movie / Series / Episode.
-- Episode results open player directly.
+```bash
+# 1. Install dependencies
+pod install
 
-### Player and Playback Reporting
-- Continue Watching item tap opens player directly.
-- Fixed resume row item tap hit/mapping behavior.
-- Improved player drawable binding lifecycle to reduce SwiftUI/VLC threading issues.
-- Playback check-in/reporting improvements:
-  - start/progress/stopped reporting path cleanup
-  - retry path when initial start report fails
-  - aligned client authorization header usage
+# 2. Open the workspace (NOT .xcodeproj)
+open PandaPlay.xcworkspace
 
-## Main Updated Files
+# 3. Select a target scheme in Xcode and run
+#    - PandaPlay-iOS  → iPhone / iPad
+#    - PandaPlay       → Apple TV (tvOS)
+```
 
-- `PandaPlay/Views/Media/HomeView.swift`
-- `PandaPlay/Views/Media/MoreMediaListView.swift`
-- `PandaPlay/Views/Media/SearchView.swift`
-- `PandaPlay/Views/Player/PlayerView.swift`
-- `PandaPlay/ViewModels/HomeViewModel.swift`
-- `PandaPlay/ViewModels/PlayerViewModel.swift`
-- `PandaPlay/Services/EmbyClient.swift`
-- `PandaPlay/App/ContentView.swift`
+## Features
 
-## Build
-- Build in Xcode or run project build from your current workspace scheme.
+- **Home** — Continue Watching row, library-based content rows with paging
+- **Search** — Server-side keyword search across Movies, Series, and Episodes
+- **Player** — VLC-based playback with subtitle/audio track switching, resume support
+- **Multi-server** — Add and switch between multiple Emby/Jellyfin servers
+- **Cross-platform** — Adaptive UI for iPhone, iPad, and Apple TV
 
+## Tech Stack
+
+| Component     | Technology                    |
+|---------------|-------------------------------|
+| Language      | Swift                         |
+| UI Framework  | SwiftUI                       |
+| Media Player  | MobileVLCKit / TVVLCKit       |
+| Dependencies  | CocoaPods                     |
+| Minimum OS    | iOS 18.0 / tvOS 18.0          |
+
+## Project Structure
+
+```
+PandaPlay/
+├── App/                    # Entry point & root view
+├── Views/
+│   ├── Onboarding/        # Server setup & login
+│   ├── Media/             # Home, detail, search, library browsing
+│   ├── Player/            # Video player & controls
+│   ├── Settings/          # Server & app settings
+│   └── Components/        # Reusable UI components
+├── ViewModels/            # Business logic
+├── Models/                # Data models
+├── Services/              # Networking (EmbyClient) & storage
+└── Utils/                 # Device detection & helpers
+```
+
+## License
+
+MobileVLCKit and TVVLCKit are licensed under LGPL v2.1+.

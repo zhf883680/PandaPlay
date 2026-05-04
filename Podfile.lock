@@ -1,10 +1,10 @@
 PODS:
-  - MobileVLCKit (3.3.17)
-  - TVVLCKit (3.3.17)
+  - MobileVLCKit (3.7.3)
+  - TVVLCKit (3.7.3)
 
 DEPENDENCIES:
-  - MobileVLCKit (~> 3.3.0)
-  - TVVLCKit (~> 3.3.0)
+  - MobileVLCKit (~> 3.7.3)
+  - TVVLCKit (~> 3.7.3)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
@@ -12,9 +12,9 @@ SPEC REPOS:
     - TVVLCKit
 
 SPEC CHECKSUMS:
-  MobileVLCKit: c5dd1b0ae933dc9c2348099840e753496dcdd908
-  TVVLCKit: 49e913b2e2d90ca538a84c012dd9281c7fa2cec0
+  MobileVLCKit: 73d7ddb52238b6885b70b0f281cae75a0a6e3ac0
+  TVVLCKit: 57ab7bbd31178881ae5200ae5d93f8c7cd1385b9
 
-PODFILE CHECKSUM: daea668ce3615360e32352502fde0b4ffc0a4ea0
+PODFILE CHECKSUM: e97f90535be0c4fefe8a691a6822daf3a5b8cc6c
 
 COCOAPODS: 1.16.2

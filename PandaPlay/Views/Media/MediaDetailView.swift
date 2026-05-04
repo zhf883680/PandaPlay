@@ -16,7 +16,7 @@ struct MediaDetailView: View {
 
     @State private var fullItem: MediaItem?
     @State private var isLoading: Bool = true
-    @State private var dynamicOverview: String = ""  // Dynamic overview from season/episode selection
+    @State private var dynamicOverview: String = ""
 
     @State private var seasons: [MediaItem] = []
     @State private var selectedSeason: MediaItem?
@@ -26,12 +26,15 @@ struct MediaDetailView: View {
     @State private var debugMessage: String = ""
 
     @State private var selectedEpisode: MediaItem?
+    @State private var selectedDetailDestination: HomeNavigationDestination?
+    @State private var isFavorite: Bool = false
+    @State private var isPlayed: Bool = false
+    @State private var similarItems: [MediaItem] = []
 
     var displayItem: MediaItem {
         fullItem ?? mediaItem
     }
 
-    // Display overview: use dynamic overview if available, otherwise fall back to series overview
     var displayOverview: String {
         if !dynamicOverview.isEmpty {
             return dynamicOverview
@@ -65,6 +68,10 @@ struct MediaDetailView: View {
 
     private var contentSpacing: CGFloat {
         DeviceType.current == .iPhone ? 16 : (DeviceType.current == .iPad ? 30 : 40)
+    }
+
+    private var itemSpacing: CGFloat {
+        DeviceType.current == .iPhone ? 12 : (DeviceType.current == .iPad ? 20 : 30)
     }
 
     var body: some View {
@@ -139,6 +146,14 @@ struct MediaDetailView: View {
                                 .foregroundColor(.white)
                                 .lineLimit(2)
 
+                            // Tagline
+                            if let taglines = displayItem.taglines, let tagline = taglines.first, !tagline.isEmpty {
+                                Text(tagline)
+                                    .italic()
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .font(DeviceType.current == .iPhone ? .caption : .body)
+                            }
+
                             // Metadata
                             HStack(spacing: DeviceType.current == .iPhone ? 8 : 15) {
                                 if let year = displayItem.productionYear {
@@ -178,19 +193,51 @@ struct MediaDetailView: View {
                                             .font(DeviceType.current == .iPhone ? .caption2 : .caption)
                                     }
                                 }
+
+                                if let rating = displayItem.officialRating {
+                                    Text(rating)
+                                        .font(DeviceType.current == .iPhone ? .caption2 : .caption)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color.white.opacity(0.2))
+                                        .cornerRadius(4)
+                                        .foregroundColor(.white)
+                                }
                             }
 
-                            // Play Button
-                            if displayItem.type == "Movie" {
-                                Button(action: {
-                                    selectedEpisode = displayItem
-                                }) {
-                                    Label("播放", systemImage: "play.fill")
-                                        .font(DeviceType.current == .iPhone ? .subheadline : .title3)
-                                        .bold()
-                                        .frame(maxWidth: DeviceType.current == .iPhone ? 150 : 200)
+                            // Action Buttons
+                            HStack(spacing: DeviceType.current == .iPhone ? 8 : 12) {
+                                if displayItem.type == "Movie" {
+                                    Button(action: {
+                                        selectedEpisode = displayItem
+                                    }) {
+                                        Label("播放", systemImage: "play.fill")
+                                            .font(DeviceType.current == .iPhone ? .subheadline : .title3)
+                                            .bold()
+                                            .frame(maxWidth: DeviceType.current == .iPhone ? 120 : 160)
+                                    }
+                                    .buttonStyle(.borderedProminent)
                                 }
-                                .buttonStyle(.borderedProminent)
+
+                                Button {
+                                    Task { await toggleFavorite() }
+                                } label: {
+                                    Label(isFavorite ? "已收藏" : "收藏",
+                                          systemImage: isFavorite ? "heart.fill" : "heart")
+                                        .font(DeviceType.current == .iPhone ? .caption : .callout)
+                                }
+                                .tint(isFavorite ? .pink : .blue)
+                                .buttonStyle(.bordered)
+
+                                Button {
+                                    Task { await togglePlayed() }
+                                } label: {
+                                    Label(isPlayed ? "已看" : "标记已看",
+                                          systemImage: isPlayed ? "checkmark.circle.fill" : "checkmark.circle")
+                                        .font(DeviceType.current == .iPhone ? .caption : .callout)
+                                }
+                                .tint(isPlayed ? .green : .blue)
+                                .buttonStyle(.bordered)
                             }
                         }
                         .padding(DeviceType.current == .iPhone ? 16 : 80)
@@ -202,16 +249,18 @@ struct MediaDetailView: View {
                         // iPhone: Vertical layout
                         VStack(alignment: .leading, spacing: contentSpacing) {
                             // Overview
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("简介")
-                                    .font(.headline)
-                                Text(displayOverview)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .lineSpacing(4)
+                            if !displayOverview.isEmpty {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("简介")
+                                        .font(.headline)
+                                    Text(displayOverview)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .lineSpacing(4)
+                                }
+                                .padding(.horizontal, horizontalPadding)
+                                .padding(.top, contentSpacing)
                             }
-                            .padding(.horizontal, horizontalPadding)
-                            .padding(.top, contentSpacing)
 
                             // Season/Episode Selection
                             if displayItem.type == "Series" {
@@ -230,12 +279,30 @@ struct MediaDetailView: View {
                                 .environmentObject(serverManager)
                                 .environmentObject(authManager)
                             }
+
+                            // Cast
+                            castSection
+
+                            // Similar
+                            similarSection
                         }
                     } else {
                         // iPad/tvOS: Horizontal layout
                         HStack(alignment: .top, spacing: 60) {
                             // Left: Season/Episode Selection
                             VStack(alignment: .leading, spacing: 40) {
+                                if !displayOverview.isEmpty {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text("简介")
+                                            .font(.title3)
+                                            .bold()
+                                        Text(displayOverview)
+                                            .font(.body)
+                                            .foregroundColor(.secondary)
+                                            .lineSpacing(5)
+                                    }
+                                }
+
                                 if displayItem.type == "Series" {
                                     SeasonEpisodeSelector(
                                         seriesId: displayItem.id,
@@ -255,15 +322,10 @@ struct MediaDetailView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
 
-                            // Right: Overview
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("简介")
-                                    .font(.title3)
-                                    .bold()
-                                Text(displayOverview)
-                                    .font(.body)
-                                    .foregroundColor(.secondary)
-                                    .lineSpacing(5)
+                            // Right: Cast + Similar
+                            VStack(alignment: .leading, spacing: contentSpacing) {
+                                castSection
+                                similarSection
                             }
                             .frame(maxWidth: 500, alignment: .leading)
                         }
@@ -278,6 +340,16 @@ struct MediaDetailView: View {
         .navigationDestination(item: $selectedEpisode) { episode in
             PlayerView(mediaItem: episode)
         }
+        .navigationDestination(item: $selectedDetailDestination) { destination in
+            switch destination {
+            case .detail(let item):
+                MediaDetailView(mediaItem: item)
+            case .player(let item):
+                PlayerView(mediaItem: item)
+            case .library:
+                EmptyView()
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 ServerSwitcher()
@@ -287,6 +359,56 @@ struct MediaDetailView: View {
             await loadFullItemDetails()
         }
     }
+
+    // MARK: - Cast Section
+
+    @ViewBuilder
+    private var castSection: some View {
+        if let people = displayItem.people, !people.isEmpty {
+            let displayPeople = people.filter { person in
+                guard let type = person.type else { return true }
+                return type == "Actor" || type == "Director" || type == "Writer"
+            }.prefix(20)
+
+            if !displayPeople.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("演职人员")
+                        .font(.headline)
+                        .padding(.horizontal, horizontalPadding)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: itemSpacing) {
+                            ForEach(Array(displayPeople)) { person in
+                                PersonCard(person: person, serverURL: serverManager.currentServer?.url ?? "")
+                            }
+                        }
+                        .padding(.horizontal, horizontalPadding)
+                    }
+                    #if !os(iOS)
+                    .focusSection()
+                    #endif
+                }
+            }
+        }
+    }
+
+    // MARK: - Similar Section
+
+    @ViewBuilder
+    private var similarSection: some View {
+        if !similarItems.isEmpty {
+            MediaRow(
+                title: "相似推荐",
+                items: similarItems,
+                serverURL: serverManager.currentServer?.url ?? "",
+                onSelect: { item in
+                    selectedDetailDestination = .detail(item)
+                }
+            )
+        }
+    }
+
+    // MARK: - Actions
 
     private func loadFullItemDetails() async {
         guard let serverURL = serverManager.currentServer?.url,
@@ -298,15 +420,51 @@ struct MediaDetailView: View {
 
         let client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
         do {
-            let item = try await client.getItem(itemId: mediaItem.id, userId: userId)
+            async let item = client.getItem(itemId: mediaItem.id, userId: userId)
+            async let similarResult = client.getSimilarItems(itemId: mediaItem.id, userId: userId, limit: 12)
+
+            let fullItem = try await item
+            let similar = (try? await similarResult) ?? []
+
             await MainActor.run {
-                self.fullItem = item
+                self.fullItem = fullItem
+                self.isFavorite = fullItem.userData?.isFavorite ?? false
+                self.isPlayed = fullItem.userData?.played ?? false
+                self.similarItems = similar
                 self.isLoading = false
             }
         } catch {
             await MainActor.run {
                 self.isLoading = false
             }
+        }
+    }
+
+    private func toggleFavorite() async {
+        guard let serverURL = serverManager.currentServer?.url,
+              let userId = authManager.userId,
+              let accessToken = authManager.accessToken else { return }
+        let client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
+        let newValue = !isFavorite
+        do {
+            try await client.setFavorite(itemId: displayItem.id, userId: userId, isFavorite: newValue)
+            isFavorite = newValue
+        } catch {
+            toastManager.show("操作失败", type: .error)
+        }
+    }
+
+    private func togglePlayed() async {
+        guard let serverURL = serverManager.currentServer?.url,
+              let userId = authManager.userId,
+              let accessToken = authManager.accessToken else { return }
+        let client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
+        let newValue = !isPlayed
+        do {
+            try await client.setPlayed(itemId: displayItem.id, userId: userId, isPlayed: newValue)
+            isPlayed = newValue
+        } catch {
+            toastManager.show("操作失败", type: .error)
         }
     }
 }
@@ -343,7 +501,6 @@ struct SeasonEpisodeSelector: View {
         DeviceType.current == .iPhone ? 3 : (DeviceType.current == .iPad ? 4 : 4)
     }
 
-    // Current overview to display
     var currentOverview: String {
         if let episode = selectedEpisode, let overview = episode.overview, !overview.isEmpty {
             return overview
@@ -427,6 +584,8 @@ struct SeasonEpisodeSelector: View {
                                     selectedEpisode = episode
                                     onEpisodeSelected(episode)
                                     onOverviewChanged(currentOverview)
+                                    // Fetch full episode details for overview
+                                    Task { await loadEpisodeDetails(for: episode.id) }
                                 }
                             }
                         }
@@ -501,7 +660,6 @@ struct SeasonEpisodeSelector: View {
             await MainActor.run {
                 self.selectedSeasonDetails = details
                 self.isLoadingSeasonDetails = false
-                // Update overview when season is selected
                 onOverviewChanged(currentOverview)
             }
         } catch {
@@ -531,6 +689,26 @@ struct SeasonEpisodeSelector: View {
             await MainActor.run {
                 self.isLoadingEpisodes = false
             }
+        }
+    }
+
+    private func loadEpisodeDetails(for episodeId: String) async {
+        guard let serverURL = serverManager.currentServer?.url,
+              let userId = authManager.userId,
+              let accessToken = authManager.accessToken else { return }
+        let client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
+        do {
+            let details = try await client.getItem(itemId: episodeId, userId: userId)
+            await MainActor.run {
+                if let overview = details.overview, !overview.isEmpty {
+                    onOverviewChanged(overview)
+                }
+                if selectedEpisode?.id == episodeId {
+                    selectedEpisode = details
+                }
+            }
+        } catch {
+            // Silently fail - overview will remain from season or empty
         }
     }
 }
@@ -732,19 +910,9 @@ struct EpisodeCard: View {
             name: "示例电视剧",
             type: "Series",
             overview: "这是一个示例电视剧的描述。这是一个非常精彩的故事，讲述了一个关于冒险和成长的故事。主要角色经历了各种挑战和考验，最终成长为真正的英雄。",
-            imageTags: nil,
-            imageBlurHashes: nil,
             productionYear: 2024,
             genres: ["动作", "科幻", "冒险"],
             runTimeTicks: 3600000000,
-            playbackPositionTicks: nil,
-            userData: nil,
-            mediaType: "Video",
-            indexNumber: nil,
-            parentIndexNumber: nil,
-            seasonId: nil,
-            seriesId: nil,
-            seriesName: nil,
             communityRating: 8.5
         ))
         .environmentObject(ServerManager())

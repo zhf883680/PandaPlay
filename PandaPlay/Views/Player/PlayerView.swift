@@ -133,13 +133,14 @@ struct PlayerView: View {
     @State private var showControls = true
     @State private var controlsTimer: Task<Void, Never>?
     @State private var showSubtitleMenu = false
+    @State private var showAudioMenu = false
     @State private var playerViewReady = false
     @State private var pendingAutoPlay = false
 
     #if os(tvOS)
     @FocusState private var focusedButton: FocusedButton?
     enum FocusedButton {
-        case back, close, rewind, subtitles, playPause, forward
+        case back, close, rewind, audio, subtitles, playPause, forward
     }
     #endif
 
@@ -365,6 +366,37 @@ struct PlayerView: View {
                     .focused($focusedButton, equals: .rewind)
                     #endif
 
+                    // Audio track button
+                    Button(action: {
+                        showAudioMenu.toggle()
+                    }) {
+                        ZStack(alignment: .topLeading) {
+                            Image(systemName: "speaker.wave.2")
+                                .font(DeviceType.current == .iPhone ? .title2 : .system(size: 48))
+                                .foregroundColor(.white)
+                                .frame(width: DeviceType.current == .iPhone ? 44 : 80,
+                                       height: DeviceType.current == .iPhone ? 44 : 80)
+
+                            if viewModel.audioTracks.count > 1 {
+                                Circle()
+                                    .fill(Color.orange)
+                                    .frame(width: DeviceType.current == .iPhone ? 8 : 12, height: DeviceType.current == .iPhone ? 8 : 12)
+                                    .offset(x: DeviceType.current == .iPhone ? -8 : -12, y: DeviceType.current == .iPhone ? -4 : -6)
+                            }
+                        }
+                    }
+                    #if os(tvOS)
+                    .focusable()
+                    .focused($focusedButton, equals: .audio)
+                    #endif
+                    .confirmationDialog("选择音轨", isPresented: $showAudioMenu, titleVisibility: .visible) {
+                        ForEach(viewModel.audioTracks) { track in
+                            Button(track.id == viewModel.currentAudioIndex ? "\(track.displayName) ✓" : track.displayName) {
+                                viewModel.setAudioTrack(index: track.id)
+                            }
+                        }
+                    }
+
                     // Subtitles button
                     Button(action: {
                         showSubtitleMenu.toggle()
@@ -484,20 +516,8 @@ struct PlayerView: View {
         name: "示例电影",
         type: "Movie",
         overview: "示例描述",
-        imageTags: nil,
-        imageBlurHashes: nil,
         productionYear: 2024,
-        genres: nil,
-        runTimeTicks: nil,
-        playbackPositionTicks: nil,
-        userData: nil,
-        mediaType: "Video",
-        indexNumber: nil,
-        parentIndexNumber: nil,
-        seasonId: nil,
-        seriesId: nil,
-        seriesName: nil,
-        communityRating: nil
+        mediaType: "Video"
     ))
     .environmentObject(AuthManager())
     .environmentObject(ServerManager())

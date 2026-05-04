@@ -33,6 +33,18 @@ struct SubtitleTrack: Identifiable, Equatable {
     static let off = SubtitleTrack(id: -1, name: "Off", language: nil)
 }
 
+// MARK: - Audio Track Model
+struct AudioTrack: Identifiable, Equatable {
+    let id: Int
+    let name: String
+    let language: String?
+
+    var displayName: String {
+        if let lang = language, !lang.isEmpty { return lang }
+        return "音轨 \(id + 1)"
+    }
+}
+
 @MainActor
 class PlayerViewModel: NSObject, ObservableObject {
     @Published var isLoading: Bool = false
@@ -43,6 +55,8 @@ class PlayerViewModel: NSObject, ObservableObject {
     @Published var duration: Int = 0
     @Published var subtitleTracks: [SubtitleTrack] = []
     @Published var currentSubtitleIndex: Int = -1
+    @Published var audioTracks: [AudioTrack] = []
+    @Published var currentAudioIndex: Int = 0
 
     private var client: EmbyClient?
     private var userId: String?
@@ -54,14 +68,22 @@ class PlayerViewModel: NSObject, ObservableObject {
     private var hasReportedPlaybackStopped: Bool = false
     private var playSessionId: String = UUID().uuidString
     private var currentSessionId: String?
+    private var currentMediaItem: MediaItem?
+    private var currentServerURL: String?
+    private var currentAccessToken: String?
+    private var hasRetriedWithHLS: Bool = false
 
     func loadPlayer(for mediaItem: MediaItem, serverURL: String, userId: String, accessToken: String) async {
         isLoading = true
         errorMessage = nil
+        hasRetriedWithHLS = false
 
         client = EmbyClient(serverURL: serverURL, accessToken: accessToken)
         self.userId = userId
         self.currentItemId = mediaItem.id
+        self.currentMediaItem = mediaItem
+        self.currentServerURL = serverURL
+        self.currentAccessToken = accessToken
         self.lastSavedPositionMs = 0
         self.lastReportedProgressMs = 0
         self.hasReportedPlaybackStart = false
@@ -69,41 +91,117 @@ class PlayerViewModel: NSObject, ObservableObject {
         self.playSessionId = UUID().uuidString
         self.currentSessionId = nil
 
-        // Get stream URL
-        // Prefer direct stream for compatibility with current server setup.
-        guard let streamURL = client?.getStreamURL(itemId: mediaItem.id, userId: userId, isStatic: true) else {
+        // Step 1: Try PlaybackInfo API to get server-supported stream URLs
+        if let streamURL = await getStreamURLFromPlaybackInfo(itemId: mediaItem.id, userId: userId, accessToken: accessToken) {
+            setupPlayer(with: streamURL, serverURL: serverURL, accessToken: accessToken)
+            return
+        }
+
+        // Step 2: Fallback to manually constructed URL
+        guard let streamURL = buildStreamURL(for: mediaItem, userId: userId) else {
             errorMessage = "无法获取播放地址"
             isLoading = false
             return
         }
 
-        // Create VLC Media
+        setupPlayer(with: streamURL, serverURL: serverURL, accessToken: accessToken)
+    }
+
+    private func getStreamURLFromPlaybackInfo(itemId: String, userId: String, accessToken: String) async -> URL? {
+        guard let client else { return nil }
+
+        do {
+            let info = try await client.getPlaybackInfo(itemId: itemId, userId: userId)
+            guard let sources = info.mediaSources, !sources.isEmpty else {
+                return nil
+            }
+
+            // Prefer transcoding URL (most compatible)
+            if let transcodingUrl = sources.first?.transcodingUrl {
+                let fullURL: String
+                if transcodingUrl.hasPrefix("http") {
+                    fullURL = transcodingUrl
+                } else {
+                    fullURL = client.baseURL + transcodingUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+                }
+                return URL(string: fullURL)
+            }
+
+            // Try direct stream URL
+            if let directUrl = sources.first?.directStreamUrl {
+                let fullURL: String
+                if directUrl.hasPrefix("http") {
+                    fullURL = directUrl
+                } else {
+                    fullURL = client.baseURL + directUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+                }
+                return URL(string: fullURL)
+            }
+
+            // Last resort: construct URL with MediaSourceId
+            if let sourceId = sources.first?.id {
+                return client.getStreamURL(itemId: itemId, userId: userId, isStatic: true, mediaSourceId: sourceId)
+            }
+
+            return nil
+        } catch {
+            return nil
+        }
+    }
+
+    private func buildStreamURL(for mediaItem: MediaItem, userId: String) -> URL? {
+        let quality = UserDefaultsManager.shared.videoQuality
+        switch quality {
+        case .auto, .max:
+            return client?.getStreamURL(itemId: mediaItem.id, userId: userId, isStatic: true)
+        case .high:
+            return client?.getMasterM3U8URL(itemId: mediaItem.id, userId: userId, maxBitrate: 12000000)
+        case .medium:
+            return client?.getMasterM3U8URL(itemId: mediaItem.id, userId: userId, maxBitrate: 4000000)
+        case .low:
+            return client?.getMasterM3U8URL(itemId: mediaItem.id, userId: userId, maxBitrate: 1500000)
+        }
+    }
+
+    private func setupPlayer(with streamURL: URL, serverURL: String, accessToken: String) {
         let media = VLCMedia(url: streamURL)
 
-        // Set HTTP headers for authentication
-        let options: [String: Any] = [
-            "http-referrer": serverURL,
-            "http-user-agent": "PandaPlay/1.0"
-        ]
-        media.addOptions(options)
+        media.addOption(":http-user-agent=PandaPlay/1.0")
+        media.addOption(":http-referrer=\(serverURL)")
+        media.addOption(":http-header=X-Emby-Token:\(accessToken)")
+        media.addOption(":no-validate-certificate")
 
-        // Create and configure player
         let player = VLCMediaPlayer()
         player.media = media
-
-        // Set up delegate for callbacks
         player.delegate = self
 
         mediaPlayer = player
         isLoading = false
 
-        // Start progress timer
         startProgressTimer()
 
-        // Load subtitle tracks after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.loadSubtitleTracks()
+            self.loadAudioTracks()
         }
+    }
+
+    private func retryWithHLS() {
+        guard !hasRetriedWithHLS,
+              let mediaItem = currentMediaItem,
+              let userId = userId,
+              let serverURL = currentServerURL,
+              let accessToken = currentAccessToken else { return }
+
+        hasRetriedWithHLS = true
+
+        guard let hlsURL = client?.getMasterM3U8URL(itemId: mediaItem.id, userId: userId, maxBitrate: 40000000) else {
+            errorMessage = "播放出错：无法获取播放地址"
+            return
+        }
+
+        setupPlayer(with: hlsURL, serverURL: serverURL, accessToken: accessToken)
+        play()
     }
 
     private func loadSubtitleTracks() {
@@ -111,7 +209,6 @@ class PlayerViewModel: NSObject, ObservableObject {
 
         var tracks: [SubtitleTrack] = [.off]
 
-        // Get subtitle tracks from player
         let subtitleIndexCount = player.numberOfSubtitlesTracks
 
         if subtitleIndexCount > 0 {
@@ -125,19 +222,34 @@ class PlayerViewModel: NSObject, ObservableObject {
         subtitleTracks = tracks
     }
 
+    private func loadAudioTracks() {
+        guard let player = mediaPlayer else { return }
+
+        let count = Int(player.numberOfAudioTracks)
+        var tracks: [AudioTrack] = []
+        for i in 0..<count {
+            tracks.append(AudioTrack(id: i, name: "音轨 \(i + 1)", language: nil))
+        }
+        audioTracks = tracks
+        if let first = tracks.first { currentAudioIndex = first.id }
+    }
+
     func setSubtitleTrack(index: Int) {
         guard let player = mediaPlayer else { return }
 
         if index == -1 {
-            // Disable subtitles
             player.currentVideoSubTitleIndex = -1
             currentSubtitleIndex = -1
         } else {
-            // Set subtitle track index (needs to be Int32)
             player.currentVideoSubTitleIndex = Int32(index)
             currentSubtitleIndex = index
-
         }
+    }
+
+    func setAudioTrack(index: Int) {
+        guard let player = mediaPlayer else { return }
+        player.currentAudioTrackIndex = Int32(index)
+        currentAudioIndex = index
     }
 
     private func startProgressTimer() {
@@ -222,9 +334,6 @@ class PlayerViewModel: NSObject, ObservableObject {
             )
         } catch {
             hasReportedPlaybackStart = false
-            #if DEBUG
-            print("❌ [PlayerViewModel] reportPlaybackStart failed: \(error.localizedDescription)")
-            #endif
         }
     }
 
@@ -242,9 +351,6 @@ class PlayerViewModel: NSObject, ObservableObject {
                 sessionId: currentSessionId
             )
         } catch {
-            #if DEBUG
-            print("❌ [PlayerViewModel] reportPlaybackProgress failed: \(error.localizedDescription)")
-            #endif
         }
     }
 
@@ -262,9 +368,6 @@ class PlayerViewModel: NSObject, ObservableObject {
             )
         } catch {
             hasReportedPlaybackStopped = false
-            #if DEBUG
-            print("❌ [PlayerViewModel] reportPlaybackStopped failed: \(error.localizedDescription)")
-            #endif
         }
     }
 
@@ -272,7 +375,6 @@ class PlayerViewModel: NSObject, ObservableObject {
         guard let itemId = currentItemId else { return }
         guard currentTime > 0, duration > 0 else { return }
 
-        // Reduce write frequency to avoid excessive UserDefaults updates.
         if abs(currentTime - lastSavedPositionMs) < 5_000 {
             return
         }
@@ -370,7 +472,11 @@ extension PlayerViewModel: VLCMediaPlayerDelegate {
             }
             reportStoppedIfNeeded()
         case .error:
-            errorMessage = "播放出错"
+            if hasRetriedWithHLS {
+                errorMessage = "播放出错"
+            } else {
+                retryWithHLS()
+            }
             isPlaying = false
             reportStoppedIfNeeded()
         default:

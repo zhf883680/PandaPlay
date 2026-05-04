@@ -63,7 +63,9 @@ struct MoreMediaListView: View {
             .padding(.bottom, 32)
         }
         .navigationTitle(section.title)
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .navigationDestination(item: $selectedDestination) { destination in
             switch destination {
             case .detail(let item):
@@ -229,6 +231,13 @@ final class MoreMediaListViewModel: ObservableObject {
         switch section {
         case .resume:
             filters["Filters"] = "IsResumable"
+        case .nextUp:
+            filters["Filters"] = "IsResumable"
+            filters["IncludeItemTypes"] = "Episode"
+        case .latest:
+            filters["IncludeItemTypes"] = "Movie,Series"
+            filters["SortBy"] = "DateCreated"
+            filters["SortOrder"] = "Descending"
         case .movies:
             filters["IncludeItemTypes"] = "Movie"
         case .tvShows:

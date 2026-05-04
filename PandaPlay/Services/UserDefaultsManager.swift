@@ -88,7 +88,7 @@ class UserDefaultsManager {
 
 // MARK: - Models
 
-enum VideoQuality: Int {
+enum VideoQuality: Int, CaseIterable {
     case auto = 0
     case max = 1
     case high = 2

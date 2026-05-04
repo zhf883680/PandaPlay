@@ -8,7 +8,7 @@
 import Foundation
 
 class EmbyClient {
-    private let baseURL: String
+    let baseURL: String
     private let session: URLSession
     private var accessToken: String?
     private let clientName = "PandaPlay"
@@ -241,7 +241,15 @@ class EmbyClient {
 
     func getItem(itemId: String, userId: String) async throws -> MediaItem {
         let endpoint = "emby/Users/\(userId)/Items/\(itemId)"
-        guard let url = URL(string: baseURL + endpoint) else {
+        guard var components = URLComponents(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+
+        components.queryItems = [
+            URLQueryItem(name: "Fields", value: "Overview,Genres,CommunityRating,ProductionYear,RunTimeTicks,People,Studios,ExternalUrls,ProviderIds,Taglines,RemoteTrailers,OfficialRating,CanDownload,CriticRating,ChildCount,Status")
+        ]
+
+        guard let url = components.url else {
             throw EmbyError.invalidURL
         }
 
@@ -280,7 +288,7 @@ class EmbyClient {
 
     func getEpisodes(seasonId: String, userId: String) async throws -> [MediaItem] {
         // Use the same format as the web UI
-        let endpoint = "emby/Users/\(userId)/Items?UserId=\(userId)&ParentId=\(seasonId)&Recursive=true&IsFolder=false"
+        let endpoint = "emby/Users/\(userId)/Items?UserId=\(userId)&ParentId=\(seasonId)&Recursive=true&IsFolder=false&Fields=Overview,RunTimeTicks"
         guard let url = URL(string: baseURL + endpoint) else {
             throw EmbyError.invalidURL
         }
@@ -471,45 +479,143 @@ class EmbyClient {
 
     // MARK: - Stream URL Helper
 
-    func getStreamURL(itemId: String, userId: String, isStatic: Bool = false) -> URL? {
+    func getStreamURL(itemId: String, userId: String, isStatic: Bool = false, mediaSourceId: String? = nil) -> URL? {
         // For direct stream / playback
-        // 使用 stream 端点直接流式传输，设置 static=true 避免服务器转码
         let endpoint = "emby/Videos/\(itemId)/stream"
         var components = URLComponents(string: baseURL + endpoint)
 
-        // 根据 Emby API 文档添加认证参数
-        // static=true 表示直接流式传输原始文件，不转码（适用于 MKV 等格式）
-        components?.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "static", value: isStatic ? "true" : "false"),
             URLQueryItem(name: "api_key", value: accessToken ?? "")
         ]
+        if let mediaSourceId {
+            queryItems.append(URLQueryItem(name: "MediaSourceId", value: mediaSourceId))
+        }
+        components?.queryItems = queryItems
         return components?.url
     }
 
-    func getMasterM3U8URL(itemId: String, userId: String) -> URL? {
+    func getMasterM3U8URL(itemId: String, userId: String, maxBitrate: Int? = nil) -> URL? {
         // For HLS master playlist with transcoding support
         let endpoint = "emby/Videos/\(itemId)/master.m3u8"
         var components = URLComponents(string: baseURL + endpoint)
-        components?.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "userId", value: userId),
             URLQueryItem(name: "api_key", value: accessToken ?? ""),
-            // Force transcoding for better compatibility
             URLQueryItem(name: "MediaSourceId", value: itemId),
-            // Video codec - use H264 for better tvOS compatibility
             URLQueryItem(name: "VideoCodec", value: "h264"),
-            // Audio codec
             URLQueryItem(name: "AudioCodec", value: "aac"),
-            // Max streaming bitrate
-            URLQueryItem(name: "MaxStreamingBitrate", value: "40000000"),
-            // Enable transcoding
+            URLQueryItem(name: "MaxStreamingBitrate", value: String(maxBitrate ?? 40000000)),
             URLQueryItem(name: "TranscodingMaxAudioChannels", value: "6"),
             URLQueryItem(name: "RequireAvc", value: "true")
         ]
+        components?.queryItems = queryItems
         return components?.url
+    }
+
+    // MARK: - Favorites
+
+    func setFavorite(itemId: String, userId: String, isFavorite: Bool) async throws {
+        let endpoint = "emby/Users/\(userId)/FavoriteItems/\(itemId)"
+        try await sendEmptyRequest(endpoint: endpoint, method: isFavorite ? "POST" : "DELETE")
+    }
+
+    // MARK: - Played Status
+
+    func setPlayed(itemId: String, userId: String, isPlayed: Bool) async throws {
+        let endpoint = "emby/Users/\(userId)/PlayedItems/\(itemId)"
+        try await sendEmptyRequest(endpoint: endpoint, method: isPlayed ? "POST" : "DELETE")
+    }
+
+    // MARK: - Similar Items
+
+    func getSimilarItems(itemId: String, userId: String, limit: Int = 12) async throws -> [MediaItem] {
+        let endpoint = "emby/Items/\(itemId)/Similar?UserId=\(userId)&Limit=\(limit)&Fields=Overview,Genres,CommunityRating,ProductionYear"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token = accessToken {
+            request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+        }
+        let (data, _) = try await session.data(for: request)
+        struct SimilarResponse: Codable {
+            let items: [MediaItem]?
+            enum CodingKeys: String, CodingKey { case items = "Items" }
+        }
+        return (try? JSONDecoder().decode(SimilarResponse.self, from: data).items) ?? []
+    }
+
+    // MARK: - Next Up
+
+    func getNextUp(userId: String, limit: Int = 20) async throws -> [MediaItem] {
+        let endpoint = "emby/Shows/NextUp?UserId=\(userId)&Limit=\(limit)&Fields=Overview,Genres,CommunityRating,ProductionYear"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token = accessToken {
+            request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+        }
+        let (data, _) = try await session.data(for: request)
+        return (try? JSONDecoder().decode(MediaItemsResponse.self, from: data).items) ?? []
+    }
+
+    // MARK: - User Views (Libraries)
+
+    func getUserViews(userId: String) async throws -> [MediaItem] {
+        let endpoint = "emby/Users/\(userId)/Views"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token = accessToken {
+            request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+        }
+        let (data, _) = try await session.data(for: request)
+        return (try? JSONDecoder().decode(MediaItemsResponse.self, from: data).items) ?? []
+    }
+
+    // MARK: - Authenticated System Info
+
+    func getSystemInfo() async throws -> ServerInfo {
+        let endpoint = "emby/System/Info"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token = accessToken {
+            request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+        }
+        let (data, response) = try await session.data(for: request)
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            throw EmbyError.invalidResponse
+        }
+        return try JSONDecoder().decode(ServerInfo.self, from: data)
     }
 }
 
 private extension EmbyClient {
+    func sendEmptyRequest(endpoint: String, method: String) async throws {
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw EmbyError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token = accessToken {
+            request.setValue(token, forHTTPHeaderField: "X-Emby-Token")
+        }
+        let (_, response) = try await session.data(for: request)
+        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw EmbyError.invalidResponse
+        }
+    }
+
     func fetchMediaItems(with request: URLRequest) async throws -> [MediaItem] {
         let (data, response) = try await session.data(for: request)
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
@@ -583,6 +689,18 @@ struct MediaItem: Codable, Identifiable, Hashable {
     let seriesId: String?
     let seriesName: String?
     let communityRating: Double?
+    let taglines: [String]?
+    let officialRating: String?
+    let people: [MediaPersonInfo]?
+    let studios: [MediaStudioInfo]?
+    let externalUrls: [MediaExternalUrlInfo]?
+    let remoteTrailers: [RemoteTrailerInfo]?
+    let providerIds: [String: String]?
+    let canDownload: Bool?
+    let criticRating: Int?
+    let childCount: Int?
+    let status: String?
+    let collectionType: String?
 
     enum CodingKeys: String, CodingKey {
         case id = "Id"
@@ -603,6 +721,62 @@ struct MediaItem: Codable, Identifiable, Hashable {
         case seriesId = "SeriesId"
         case seriesName = "SeriesName"
         case communityRating = "CommunityRating"
+        case taglines = "Taglines"
+        case officialRating = "OfficialRating"
+        case people = "People"
+        case studios = "Studios"
+        case externalUrls = "ExternalUrls"
+        case remoteTrailers = "RemoteTrailers"
+        case providerIds = "ProviderIds"
+        case canDownload = "CanDownload"
+        case criticRating = "CriticRating"
+        case childCount = "ChildCount"
+        case status = "Status"
+        case collectionType = "CollectionType"
+    }
+
+    init(id: String, name: String? = nil, type: String? = nil, overview: String? = nil,
+         imageTags: ImageTags? = nil, imageBlurHashes: ImageBlurHashes? = nil,
+         productionYear: Int? = nil, genres: [String]? = nil, runTimeTicks: Int64? = nil,
+         playbackPositionTicks: Int64? = nil, userData: UserData? = nil,
+         mediaType: String? = nil, indexNumber: Int? = nil, parentIndexNumber: Int? = nil,
+         seasonId: String? = nil, seriesId: String? = nil, seriesName: String? = nil,
+         communityRating: Double? = nil, taglines: [String]? = nil,
+         officialRating: String? = nil, people: [MediaPersonInfo]? = nil,
+         studios: [MediaStudioInfo]? = nil, externalUrls: [MediaExternalUrlInfo]? = nil,
+         remoteTrailers: [RemoteTrailerInfo]? = nil, providerIds: [String: String]? = nil,
+         canDownload: Bool? = nil, criticRating: Int? = nil, childCount: Int? = nil,
+         status: String? = nil, collectionType: String? = nil) {
+        self.id = id
+        self.name = name
+        self.type = type
+        self.overview = overview
+        self.imageTags = imageTags
+        self.imageBlurHashes = imageBlurHashes
+        self.productionYear = productionYear
+        self.genres = genres
+        self.runTimeTicks = runTimeTicks
+        self.playbackPositionTicks = playbackPositionTicks
+        self.userData = userData
+        self.mediaType = mediaType
+        self.indexNumber = indexNumber
+        self.parentIndexNumber = parentIndexNumber
+        self.seasonId = seasonId
+        self.seriesId = seriesId
+        self.seriesName = seriesName
+        self.communityRating = communityRating
+        self.taglines = taglines
+        self.officialRating = officialRating
+        self.people = people
+        self.studios = studios
+        self.externalUrls = externalUrls
+        self.remoteTrailers = remoteTrailers
+        self.providerIds = providerIds
+        self.canDownload = canDownload
+        self.criticRating = criticRating
+        self.childCount = childCount
+        self.status = status
+        self.collectionType = collectionType
     }
 
     func hash(into hasher: inout Hasher) {
@@ -666,6 +840,14 @@ struct ServerInfo: Codable {
     let productName: String?
     let version: String?
     let serverName: String?
+    let operatingSystem: String?
+
+    enum CodingKeys: String, CodingKey {
+        case productName = "ProductName"
+        case version = "Version"
+        case serverName = "ServerName"
+        case operatingSystem = "OperatingSystem"
+    }
 }
 
 private struct SessionInfo: Codable {
@@ -715,20 +897,74 @@ struct PlaybackInfoResponse: Codable {
 }
 
 struct MediaSource: Codable {
+    let id: String?
     let supportsDirectPlay: Bool?
     let supportsDirectStream: Bool?
     let supportsTranscoding: Bool?
     let path: String?
     let container: String?
     let type: String?
+    let directStreamUrl: String?
+    let transcodingUrl: String?
 
     enum CodingKeys: String, CodingKey {
+        case id = "Id"
         case supportsDirectPlay = "SupportsDirectPlay"
         case supportsDirectStream = "SupportsDirectStream"
         case supportsTranscoding = "SupportsTranscoding"
         case path = "Path"
         case container = "Container"
         case type = "Type"
+        case directStreamUrl = "DirectStreamUrl"
+        case transcodingUrl = "TranscodingUrl"
+    }
+}
+
+// MARK: - Supporting Models
+
+struct MediaPersonInfo: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let role: String?
+    let type: String?
+    let primaryImageTag: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "Id"
+        case name = "Name"
+        case role = "Role"
+        case type = "Type"
+        case primaryImageTag = "PrimaryImageTag"
+    }
+}
+
+struct MediaStudioInfo: Codable, Hashable {
+    let name: String
+    let id: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name = "Name"
+        case id = "Id"
+    }
+}
+
+struct MediaExternalUrlInfo: Codable {
+    let name: String
+    let url: String
+
+    enum CodingKeys: String, CodingKey {
+        case name = "Name"
+        case url = "Url"
+    }
+}
+
+struct RemoteTrailerInfo: Codable {
+    let url: String
+    let name: String?
+
+    enum CodingKeys: String, CodingKey {
+        case url = "Url"
+        case name = "Name"
     }
 }
 

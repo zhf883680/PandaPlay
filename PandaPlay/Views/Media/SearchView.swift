@@ -73,7 +73,9 @@ struct SearchView: View {
             }
         }
         .navigationTitle("搜索")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .searchable(text: $viewModel.keyword, prompt: "搜索电影 / 电视剧 / 剧集")
         .navigationDestination(item: $selectedDestination) { destination in
             switch destination {
@@ -81,6 +83,8 @@ struct SearchView: View {
                 MediaDetailView(mediaItem: item)
             case .player(let item):
                 PlayerView(mediaItem: item)
+            case .library(let item):
+                LibraryBrowseView(library: item)
             }
         }
         .onAppear {
