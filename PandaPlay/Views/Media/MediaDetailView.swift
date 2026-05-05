@@ -63,7 +63,11 @@ struct MediaDetailView: View {
     }
 
     private var backdropHeight: CGFloat {
-        DeviceType.current == .iPhone ? 220 : (DeviceType.current == .iPad ? 350 : 450)
+        #if os(tvOS)
+        550
+        #else
+        DeviceType.current == .iPhone ? 220 : 350
+        #endif
     }
 
     private var contentSpacing: CGFloat {
@@ -319,6 +323,9 @@ struct MediaDetailView: View {
                                     .environmentObject(serverManager)
                                     .environmentObject(authManager)
                                 }
+
+                                // Media info section (tvOS only)
+                                mediaInfoSection
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -390,6 +397,75 @@ struct MediaDetailView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Media Info Section (tvOS)
+
+    @ViewBuilder
+    private var mediaInfoSection: some View {
+        #if os(tvOS)
+        VStack(alignment: .leading, spacing: 20) {
+            // Studios
+            if let studios = displayItem.studios, !studios.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("制片厂")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 12) {
+                        ForEach(studios, id: \.name) { studio in
+                            Text(studio.name)
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(6)
+                        }
+                    }
+                }
+            }
+
+            // All Genres
+            if let genres = displayItem.genres, !genres.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("标签")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 12) {
+                        ForEach(genres, id: \.self) { genre in
+                            Text(genre)
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.blue.opacity(0.2))
+                                .cornerRadius(6)
+                        }
+                    }
+                }
+            }
+
+            // External Links
+            if let urls = displayItem.externalUrls, !urls.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("外部链接")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    ForEach(urls, id: \.name) { link in
+                        HStack {
+                            Text(link.name)
+                                .font(.subheadline)
+                            Spacer()
+                            Text(link.url)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, horizontalPadding)
+        .padding(.top, contentSpacing)
+        #endif
     }
 
     // MARK: - Similar Section

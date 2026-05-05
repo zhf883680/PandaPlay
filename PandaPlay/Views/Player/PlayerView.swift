@@ -126,6 +126,7 @@ struct VLCPlayerView: UIViewRepresentable {
 struct PlayerView: View {
     let mediaItem: MediaItem
     @StateObject private var viewModel = PlayerViewModel()
+    @StateObject private var danmakuService = DanmakuService()
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var serverManager: ServerManager
@@ -134,15 +135,23 @@ struct PlayerView: View {
     @State private var controlsTimer: Task<Void, Never>?
     @State private var showSubtitleMenu = false
     @State private var showAudioMenu = false
+    @State private var showSpeedMenu = false
+    @State private var showDanmakuMatch = false
     @State private var playerViewReady = false
     @State private var pendingAutoPlay = false
+    @State private var danmakuEnabled: Bool = UserDefaultsManager.shared.danmakuEnabled
 
     #if os(tvOS)
     @FocusState private var focusedButton: FocusedButton?
     enum FocusedButton {
-        case back, close, rewind, audio, subtitles, playPause, forward
+        case back, close, rewind, audio, subtitles, danmaku, speed, playPause, forward
     }
     #endif
+
+    private let speeds: [(label: String, value: Float)] = [
+        ("0.5x", 0.5), ("0.75x", 0.75), ("1.0x", 1.0),
+        ("1.25x", 1.25), ("1.5x", 1.5), ("2.0x", 2.0)
+    ]
 
     private var loadingScale: CGFloat {
         DeviceType.current == .iPhone ? 1.2 : (DeviceType.current == .iPad ? 1.5 : 2)
@@ -161,7 +170,6 @@ struct PlayerView: View {
                     .ignoresSafeArea()
                     #if os(tvOS)
                     .onPlayPauseCommand {
-                        // Handle Siri Remote play/pause button
                         if viewModel.isPlaying {
                             viewModel.pause()
                         } else {
@@ -169,13 +177,26 @@ struct PlayerView: View {
                         }
                     }
                     .onTapGesture(count: 1) {
-                        // Single tap to toggle controls on tvOS
                         withAnimation {
                             showControls.toggle()
                         }
                         resetControlsTimer()
                     }
                     #endif
+
+                // Danmaku overlay
+                if danmakuEnabled && !danmakuService.comments.isEmpty {
+                    GeometryReader { geometry in
+                        DanmakuOverlayView(
+                            comments: danmakuService.comments,
+                            currentTimeMs: Double(viewModel.currentTime),
+                            containerWidth: geometry.size.width,
+                            containerHeight: geometry.size.height
+                        )
+                    }
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                }
 
                 // Player controls overlay
                 if showControls {
@@ -226,7 +247,6 @@ struct PlayerView: View {
         }
         #if os(iOS)
         .onTapGesture(count: 2) {
-            // Double tap to toggle controls on iOS
             withAnimation {
                 showControls.toggle()
             }
@@ -251,9 +271,18 @@ struct PlayerView: View {
             pendingAutoPlay = false
             playerViewReady = false
             viewModel.cleanup()
+            danmakuService.clearDanmaku()
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showDanmakuMatch) {
+            DanmakuMatchView(
+                mediaContext: buildDanmakuContext(),
+                danmakuService: danmakuService
+            )
+        }
     }
+
+    // MARK: - Controls Overlay
 
     @ViewBuilder
     private var controlsOverlay: some View {
@@ -282,6 +311,13 @@ struct PlayerView: View {
 
                 Spacer()
 
+                // Danmaku status indicator
+                if danmakuEnabled && !danmakuService.comments.isEmpty {
+                    Text("\(danmakuService.comments.count) 条弹幕")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                }
+
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.title3)
@@ -303,56 +339,14 @@ struct PlayerView: View {
             // Bottom controls
             VStack(spacing: DeviceType.current == .iPhone ? 8 : 16) {
                 // Progress bar
-                VStack(spacing: 4) {
-                    HStack {
-                        Text(formatTime(viewModel.currentTime))
-                            .font(.caption)
-                            .foregroundColor(.white)
-
-                        Spacer()
-
-                        Text(formatTime(viewModel.duration))
-                            .font(.caption)
-                            .foregroundColor(.white)
-                    }
-
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            // Background
-                            Rectangle()
-                                .fill(Color.white.opacity(0.3))
-                                .frame(height: DeviceType.current == .iPhone ? 4 : 8)
-
-                            // Progress
-                            if viewModel.duration > 0 {
-                                Rectangle()
-                                    .fill(Color.blue)
-                                    .frame(width: geometry.size.width * CGFloat(viewModel.currentTime) / CGFloat(viewModel.duration), height: DeviceType.current == .iPhone ? 4 : 8)
-                            }
-                        }
-                        .cornerRadius(4)
-                        #if os(iOS)
-                        .contentShape(Rectangle())
-                        .gesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { value in
-                                    let percentage = value.location.x / geometry.size.width
-                                    let newTime = Int(Double(percentage) * Double(viewModel.duration))
-                                    viewModel.seek(to: newTime * 1000)
-                                }
-                        )
-                        #elseif os(tvOS)
-                        .focusable()
-                        #endif
-                    }
-                    .frame(height: DeviceType.current == .iPhone ? 4 : 8)
-                }
+                progressBar
 
                 // Playback controls
-                HStack(spacing: DeviceType.current == .iPhone ? 25 : 60) {
-                    // Rewind 10 seconds
+                HStack(spacing: DeviceType.current == .iPhone ? 25 : 40) {
+                    // Rewind
                     Button(action: {
-                        let newTime = max(0, viewModel.currentTime - 10000)
+                        let step = UserDefaultsManager.shared.seekStep * 1000
+                        let newTime = max(0, viewModel.currentTime - step)
                         viewModel.seek(to: newTime)
                     }) {
                         Image(systemName: "gobackward.10")
@@ -367,9 +361,7 @@ struct PlayerView: View {
                     #endif
 
                     // Audio track button
-                    Button(action: {
-                        showAudioMenu.toggle()
-                    }) {
+                    Button(action: { showAudioMenu.toggle() }) {
                         ZStack(alignment: .topLeading) {
                             Image(systemName: "speaker.wave.2")
                                 .font(DeviceType.current == .iPhone ? .title2 : .system(size: 48))
@@ -398,9 +390,7 @@ struct PlayerView: View {
                     }
 
                     // Subtitles button
-                    Button(action: {
-                        showSubtitleMenu.toggle()
-                    }) {
+                    Button(action: { showSubtitleMenu.toggle() }) {
                         ZStack(alignment: .topLeading) {
                             Image(systemName: "captions.bubble")
                                 .font(DeviceType.current == .iPhone ? .title2 : .system(size: 48))
@@ -420,7 +410,6 @@ struct PlayerView: View {
                     .focusable()
                     .focused($focusedButton, equals: .subtitles)
                     #endif
-                    #if os(iOS)
                     .confirmationDialog("选择字幕", isPresented: $showSubtitleMenu, titleVisibility: .visible) {
                         ForEach(viewModel.subtitleTracks) { track in
                             Button(track.displayName) {
@@ -428,15 +417,6 @@ struct PlayerView: View {
                             }
                         }
                     }
-                    #elseif os(tvOS)
-                    .confirmationDialog("选择字幕", isPresented: $showSubtitleMenu, titleVisibility: .visible) {
-                        ForEach(viewModel.subtitleTracks) { track in
-                            Button(track.displayName) {
-                                viewModel.setSubtitleTrack(index: track.id)
-                            }
-                        }
-                    }
-                    #endif
 
                     // Play/Pause
                     Button(action: {
@@ -457,9 +437,49 @@ struct PlayerView: View {
                     .focused($focusedButton, equals: .playPause)
                     #endif
 
-                    // Forward 10 seconds
+                    // Danmaku toggle
                     Button(action: {
-                        let newTime = min(viewModel.duration, viewModel.currentTime + 10000)
+                        danmakuEnabled.toggle()
+                        UserDefaultsManager.shared.danmakuEnabled = danmakuEnabled
+                        if !danmakuEnabled {
+                            danmakuService.clearDanmaku()
+                        }
+                    }) {
+                        Image(systemName: danmakuEnabled ? "text.bubble.fill" : "text.bubble")
+                            .font(DeviceType.current == .iPhone ? .title2 : .system(size: 48))
+                            .foregroundColor(danmakuEnabled ? .yellow : .white)
+                            .frame(width: DeviceType.current == .iPhone ? 44 : 80,
+                                   height: DeviceType.current == .iPhone ? 44 : 80)
+                    }
+                    #if os(tvOS)
+                    .focusable()
+                    .focused($focusedButton, equals: .danmaku)
+                    #endif
+
+                    // Speed control
+                    Button(action: { showSpeedMenu.toggle() }) {
+                        Text(speedLabel)
+                            .font(DeviceType.current == .iPhone ? .caption : .system(size: 24))
+                            .foregroundColor(viewModel.playbackRate != 1.0 ? .yellow : .white)
+                            .frame(width: DeviceType.current == .iPhone ? 44 : 80,
+                                   height: DeviceType.current == .iPhone ? 44 : 80)
+                    }
+                    #if os(tvOS)
+                    .focusable()
+                    .focused($focusedButton, equals: .speed)
+                    #endif
+                    .confirmationDialog("播放速度", isPresented: $showSpeedMenu, titleVisibility: .visible) {
+                        ForEach(speeds, id: \.value) { speed in
+                            Button(speed.value == viewModel.playbackRate ? "\(speed.label) ✓" : speed.label) {
+                                viewModel.setRate(speed.value)
+                            }
+                        }
+                    }
+
+                    // Forward
+                    Button(action: {
+                        let step = UserDefaultsManager.shared.seekStep * 1000
+                        let newTime = min(viewModel.duration, viewModel.currentTime + step)
                         viewModel.seek(to: newTime)
                     }) {
                         Image(systemName: "goforward.10")
@@ -480,10 +500,81 @@ struct PlayerView: View {
         }
     }
 
+    // MARK: - Progress Bar
+
+    private var progressBar: some View {
+        VStack(spacing: 4) {
+            HStack {
+                Text(formatTime(viewModel.currentTime))
+                    .font(.caption)
+                    .foregroundColor(.white)
+
+                Spacer()
+
+                Text(formatTime(viewModel.duration))
+                    .font(.caption)
+                    .foregroundColor(.white)
+            }
+
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(height: DeviceType.current == .iPhone ? 4 : 8)
+
+                    if viewModel.duration > 0 {
+                        Rectangle()
+                            .fill(Color.blue)
+                            .frame(width: geometry.size.width * CGFloat(viewModel.currentTime) / CGFloat(viewModel.duration), height: DeviceType.current == .iPhone ? 4 : 8)
+                    }
+                }
+                .cornerRadius(4)
+                #if os(iOS)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            let percentage = value.location.x / geometry.size.width
+                            let newTime = Int(Double(percentage) * Double(viewModel.duration))
+                            viewModel.seek(to: newTime * 1000)
+                        }
+                )
+                #elseif os(tvOS)
+                .focusable()
+                .onMoveCommand { direction in
+                    let step = UserDefaultsManager.shared.seekStep * 1000
+                    switch direction {
+                    case .left:
+                        let newTime = max(0, viewModel.currentTime - step)
+                        viewModel.seek(to: newTime)
+                    case .right:
+                        let newTime = min(viewModel.duration, viewModel.currentTime + step)
+                        viewModel.seek(to: newTime)
+                    default:
+                        break
+                    }
+                }
+                #endif
+            }
+            .frame(height: DeviceType.current == .iPhone ? 4 : 8)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private var speedLabel: String {
+        if viewModel.playbackRate == 1.0 { return "1x" }
+        return String(format: "%gx", viewModel.playbackRate)
+    }
+
     private func formatTime(_ milliseconds: Int) -> String {
-        let seconds = milliseconds / 1000
-        let mins = seconds / 60
-        let secs = seconds % 60
+        let totalSeconds = milliseconds / 1000
+        let hours = totalSeconds / 3600
+        let mins = (totalSeconds % 3600) / 60
+        let secs = totalSeconds % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, mins, secs)
+        }
         return String(format: "%d:%02d", mins, secs)
     }
 
@@ -507,6 +598,28 @@ struct PlayerView: View {
         #if os(tvOS)
         focusedButton = .playPause
         #endif
+
+        // Load danmaku
+        if danmakuEnabled {
+            Task {
+                await danmakuService.prepareDanmaku(context: buildDanmakuContext())
+            }
+        }
+    }
+
+    private func buildDanmakuContext() -> DanmakuMediaContext {
+        DanmakuMediaContext(
+            serverId: serverManager.currentServer?.id ?? "",
+            mediaId: mediaItem.id,
+            title: mediaItem.name ?? "",
+            originalTitle: nil,
+            seriesName: mediaItem.seriesName,
+            productionYear: mediaItem.productionYear,
+            seasonNumber: mediaItem.parentIndexNumber,
+            episodeNumber: mediaItem.indexNumber,
+            durationMs: mediaItem.runTimeTicks.map { Double($0 / 10_000) },
+            fileName: nil
+        )
     }
 }
 

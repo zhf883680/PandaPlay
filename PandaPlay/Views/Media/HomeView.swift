@@ -34,74 +34,84 @@ struct HomeView: View {
     }
 
     var body: some View {
+        #if os(tvOS)
+        homeContent
+        #else
         NavigationStack {
-            ScrollView {
-                VStack(spacing: sectionSpacing) {
-                    // Content based on state
-                    contentView
-                }
-                .padding(.top, verticalPadding)
-            }
-            .navigationDestination(item: $selectedDestination) { destination in
-                switch destination {
-                case .detail(let item):
-                    MediaDetailView(mediaItem: item)
-                case .player(let item):
-                    PlayerView(mediaItem: item)
-                case .library(let item):
-                    LibraryBrowseView(library: item)
-                }
-            }
-            .navigationDestination(item: $selectedSection) { section in
-                MoreMediaListView(
-                    section: section,
-                    serverURL: serverManager.currentServer?.url ?? "",
-                    userId: authManager.userId ?? "",
-                    accessToken: authManager.accessToken ?? ""
-                )
-            }
-            .navigationDestination(isPresented: $showSettings) {
-                SettingsView()
-            }
-            .navigationDestination(isPresented: $showSearch) {
-                SearchView(
-                    serverURL: serverManager.currentServer?.url ?? "",
-                    userId: authManager.userId ?? "",
-                    accessToken: authManager.accessToken ?? ""
-                )
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    ServerSwitcher()
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 14) {
-                        Button(action: {
-                            showSearch = true
-                        }) {
-                            Image(systemName: "magnifyingglass")
-                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
-                        }
+            homeContent
+        }
+        #endif
+    }
 
-                        Button(action: {
-                            showSettings = true
-                        }) {
-                            Image(systemName: "gearshape.fill")
-                                .font(DeviceType.current == .iPhone ? .title3 : .title2)
-                        }
+    private var homeContent: some View {
+        ScrollView {
+            VStack(spacing: sectionSpacing) {
+                // Content based on state
+                contentView
+            }
+            .padding(.top, verticalPadding)
+        }
+        .navigationDestination(item: $selectedDestination) { destination in
+            switch destination {
+            case .detail(let item):
+                MediaDetailView(mediaItem: item)
+            case .player(let item):
+                PlayerView(mediaItem: item)
+            case .library(let item):
+                LibraryBrowseView(library: item)
+            }
+        }
+        .navigationDestination(item: $selectedSection) { section in
+            MoreMediaListView(
+                section: section,
+                serverURL: serverManager.currentServer?.url ?? "",
+                userId: authManager.userId ?? "",
+                accessToken: authManager.accessToken ?? ""
+            )
+        }
+        .navigationDestination(isPresented: $showSettings) {
+            SettingsView()
+        }
+        .navigationDestination(isPresented: $showSearch) {
+            SearchView(
+                serverURL: serverManager.currentServer?.url ?? "",
+                userId: authManager.userId ?? "",
+                accessToken: authManager.accessToken ?? ""
+            )
+        }
+        #if !os(tvOS)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                ServerSwitcher()
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 14) {
+                    Button(action: {
+                        showSearch = true
+                    }) {
+                        Image(systemName: "magnifyingglass")
+                            .font(DeviceType.current == .iPhone ? .title3 : .title2)
+                    }
+
+                    Button(action: {
+                        showSettings = true
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(DeviceType.current == .iPhone ? .title3 : .title2)
                     }
                 }
             }
-            .sheet(isPresented: $showServerSetup) {
-                if let currentServer = serverManager.currentServer {
-                    ServerSetupView(editingServer: currentServer)
-                } else {
-                    ServerSetupView()
-                }
+        }
+        #endif
+        .sheet(isPresented: $showServerSetup) {
+            if let currentServer = serverManager.currentServer {
+                ServerSetupView(editingServer: currentServer)
+            } else {
+                ServerSetupView()
             }
-            .sheet(isPresented: $showLogin) {
-                LoginView()
-            }
+        }
+        .sheet(isPresented: $showLogin) {
+            LoginView()
         }
         .task {
             await refreshContentIfReady()
@@ -283,6 +293,23 @@ struct HomeView: View {
 
     @ViewBuilder
     private var contentRows: some View {
+        // Hero section (tvOS only)
+        #if os(tvOS)
+        if !viewModel.resumeItems.isEmpty || !viewModel.latestItems.isEmpty {
+            let heroItems = Array((viewModel.resumeItems + viewModel.latestItems).prefix(10))
+            TVHeroSection(
+                items: heroItems,
+                serverURL: serverManager.currentServer?.url ?? "",
+                onPlay: { item in
+                    selectedDestination = .player(item)
+                },
+                onDetail: { item in
+                    selectedDestination = .detail(item)
+                }
+            )
+        }
+        #endif
+
         // Resume Items
         if !viewModel.resumeItems.isEmpty {
             MediaRow(

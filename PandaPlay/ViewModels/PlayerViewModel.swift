@@ -57,6 +57,7 @@ class PlayerViewModel: NSObject, ObservableObject {
     @Published var currentSubtitleIndex: Int = -1
     @Published var audioTracks: [AudioTrack] = []
     @Published var currentAudioIndex: Int = 0
+    @Published var playbackRate: Float = 1.0
 
     private var client: EmbyClient?
     private var userId: String?
@@ -250,6 +251,12 @@ class PlayerViewModel: NSObject, ObservableObject {
         guard let player = mediaPlayer else { return }
         player.currentAudioTrackIndex = Int32(index)
         currentAudioIndex = index
+    }
+
+    func setRate(_ rate: Float) {
+        guard let player = mediaPlayer else { return }
+        player.rate = rate
+        playbackRate = rate
     }
 
     private func startProgressTimer() {

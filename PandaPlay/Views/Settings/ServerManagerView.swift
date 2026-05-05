@@ -34,6 +34,26 @@ struct ServerManagerView: View {
                         Image(systemName: "checkmark")
                             .foregroundColor(.blue)
                     }
+
+                    #if os(tvOS)
+                    Spacer()
+                    Button {
+                        editingServer = server
+                    } label: {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        serverToDelete = server
+                        showingDeleteAlert = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                    .buttonStyle(.plain)
+                    #endif
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {

@@ -123,6 +123,9 @@ struct ServerListView: View {
 
     @FocusState private var focusedServerId: String?
     @State private var showingAddServer = false
+    @State private var editingServer: EmbyServer?
+    @State private var serverToDelete: EmbyServer?
+    @State private var showingDeleteAlert = false
 
     var body: some View {
         NavigationView {
@@ -144,30 +147,47 @@ struct ServerListView: View {
 
                 // Existing servers
                 ForEach(serverManager.servers) { server in
-                    Button(action: {
-                        switchToServer(server)
-                    }) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(server.name)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                                Text(server.url)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Spacer()
-
-                            if server.id == serverManager.currentServer?.id {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
-                            }
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(server.name)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text(server.url)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        .contentShape(Rectangle())
-                        .focused($focusedServerId, equals: server.id)
+
+                        Spacer()
+
+                        if server.id == serverManager.currentServer?.id {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.blue)
+                        }
+
+                        #if os(tvOS)
+                        Button {
+                            editingServer = server
+                        } label: {
+                            Image(systemName: "pencil")
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            serverToDelete = server
+                            showingDeleteAlert = true
+                        } label: {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.plain)
+                        #endif
                     }
-                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        switchToServer(server)
+                    }
+                    .focused($focusedServerId, equals: server.id)
                 }
             }
             .navigationTitle("选择服务器")
@@ -184,6 +204,31 @@ struct ServerListView: View {
             .sheet(isPresented: $showingAddServer) {
                 ServerSetupView()
             }
+            .sheet(item: $editingServer) { server in
+                ServerSetupView(editingServer: server)
+            }
+            .alert("删除服务器", isPresented: $showingDeleteAlert) {
+                Button("取消", role: .cancel) { }
+                Button("删除", role: .destructive) {
+                    if let server = serverToDelete {
+                        deleteServer(server)
+                    }
+                }
+            } message: {
+                if let server = serverToDelete {
+                    Text("确定要删除服务器「\(server.name)」吗？")
+                }
+            }
+        }
+    }
+
+    private func deleteServer(_ server: EmbyServer) {
+        let wasCurrent = server.id == serverManager.currentServer?.id
+        authManager.clearSavedCredentials(for: server.id)
+        serverManager.removeServer(server)
+        toastManager.show("已删除 \(server.name)", type: .success)
+        if wasCurrent {
+            dismiss()
         }
     }
 

@@ -22,7 +22,11 @@ struct ContentView: View {
                         .foregroundColor(.secondary)
                 }
             } else {
+                #if os(tvOS)
+                TVMainTabView()
+                #else
                 HomeView()
+                #endif
             }
         }
         .task {
